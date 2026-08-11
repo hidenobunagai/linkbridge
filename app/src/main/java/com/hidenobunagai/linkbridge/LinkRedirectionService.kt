@@ -5,15 +5,20 @@ import android.content.Intent
 import android.net.Uri
 import android.provider.CallLog
 import android.telecom.CallRedirectionService
+import android.telecom.PhoneAccountHandle
 import android.util.Log
 
 class LinkRedirectionService : CallRedirectionService() {
 
-    override fun onPlaceCall(handle: Uri, callerDisplayName: String, isVideoCall: Boolean) {
+    override fun onPlaceCall(
+        handle: Uri,
+        callRedirectionAccount: PhoneAccountHandle,
+        isVideoCall: Boolean
+    ) {
         val number = handle.schemeSpecificPart
         if (number.isNullOrBlank()) {
             // 空の番号（*123# などのショートコード含む）は通常発信のまま通す
-            placeCall(handle, null, null)
+            placeCallUnmodified()
             return
         }
 
@@ -24,25 +29,22 @@ class LinkRedirectionService : CallRedirectionService() {
         if (intent.resolveActivity(packageManager) == null) {
             // Rakuten Link 未インストール時は通話を落とさず通常発信にフォールバック
             Log.w(TAG, "Rakuten Link is not installed; placing a normal call")
-            placeCall(handle, null, null)
+            placeCallUnmodified()
             return
         }
 
-        insertCallLog(number, callerDisplayName)
+        insertCallLog(number)
         cancelCall()
         startActivity(intent)
     }
 
-    private fun insertCallLog(number: String, callerDisplayName: String) {
+    private fun insertCallLog(number: String) {
         val values = ContentValues().apply {
             put(CallLog.Calls.NUMBER, number)
             put(CallLog.Calls.TYPE, CallLog.Calls.OUTGOING_TYPE)
             put(CallLog.Calls.DATE, System.currentTimeMillis())
             put(CallLog.Calls.DURATION, 0)
             put(CallLog.Calls.NEW, 1)
-            if (callerDisplayName.isNotBlank()) {
-                put(CallLog.Calls.CACHED_NAME, callerDisplayName)
-            }
         }
         try {
             contentResolver.insert(CallLog.Calls.CONTENT_URI, values)

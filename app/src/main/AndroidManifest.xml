@@ -3,7 +3,6 @@
 
     <uses-permission android:name="android.permission.WRITE_CALL_LOG" />
     <uses-permission android:name="android.permission.READ_CALL_LOG" />
-    <uses-permission android:name="android.permission.PROCESS_OUTGOING_CALLS" />
 
     <queries>
         <package android:name="jp.co.rakuten.mobile.rcs" />

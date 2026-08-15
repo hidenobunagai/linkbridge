@@ -13,16 +13,16 @@ class LinkRedirectionService : CallRedirectionService() {
     override fun onPlaceCall(
         handle: Uri,
         callRedirectionAccount: PhoneAccountHandle,
-        isVideoCall: Boolean
+        allowInteractiveResponse: Boolean
     ) {
-        val number = handle.schemeSpecificPart
-        if (number.isNullOrBlank()) {
-            // 空の番号（*123# などのショートコード含む）は通常発信のまま通す
-            placeCallUnmodified()
-            return
-        }
+        val number = phoneNumberForRedirect(handle.scheme, handle.schemeSpecificPart)
+            ?: run {
+                // ショートコード (*123# など)・USSD・SIP 等は通常発信のまま通す
+                placeCallUnmodified()
+                return
+            }
 
-        val intent = Intent(Intent.ACTION_VIEW, Uri.parse("tel:$number"))
+        val intent = Intent(Intent.ACTION_VIEW, Uri.fromParts("tel", number, null))
             .setPackage(RAKUTEN_LINK_PACKAGE)
             .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
 
@@ -44,7 +44,7 @@ class LinkRedirectionService : CallRedirectionService() {
             put(CallLog.Calls.TYPE, CallLog.Calls.OUTGOING_TYPE)
             put(CallLog.Calls.DATE, System.currentTimeMillis())
             put(CallLog.Calls.DURATION, 0)
-            put(CallLog.Calls.NEW, 1)
+            put(CallLog.Calls.NEW, 0)
         }
         try {
             contentResolver.insert(CallLog.Calls.CONTENT_URI, values)

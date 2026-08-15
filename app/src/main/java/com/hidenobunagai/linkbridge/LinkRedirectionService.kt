@@ -22,7 +22,10 @@ class LinkRedirectionService : CallRedirectionService() {
                 return
             }
 
-        val intent = Intent(Intent.ACTION_VIEW, Uri.fromParts("tel", number, null))
+        // Rakuten Link は国内番号形式 (080...) でないと発信できないため、+81... を変換する
+        val dialNumber = toNationalFormat(number)
+
+        val intent = Intent(Intent.ACTION_VIEW, Uri.fromParts("tel", dialNumber, null))
             .setPackage(RAKUTEN_LINK_PACKAGE)
             .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
 
@@ -33,7 +36,7 @@ class LinkRedirectionService : CallRedirectionService() {
             return
         }
 
-        insertCallLog(number)
+        insertCallLog(dialNumber)
         cancelCall()
         startActivity(intent)
     }

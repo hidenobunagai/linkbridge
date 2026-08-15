@@ -1,19 +1,31 @@
 package com.hidenobunagai.linkbridge
 
 import android.Manifest
-import android.app.Activity
 import android.app.role.RoleManager
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.widget.Button
 import android.widget.TextView
+import androidx.activity.ComponentActivity
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
 
-class MainActivity : Activity() {
+class MainActivity : ComponentActivity() {
 
     private lateinit var roleManager: RoleManager
     private lateinit var statusRole: TextView
     private lateinit var statusCallLog: TextView
+
+    private val roleLauncher: ActivityResultLauncher<Intent> =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+            updateStatus()
+        }
+
+    private val permissionLauncher: ActivityResultLauncher<String> =
+        registerForActivityResult(ActivityResultContracts.RequestPermission()) {
+            updateStatus()
+        }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -24,38 +36,19 @@ class MainActivity : Activity() {
         statusCallLog = findViewById(R.id.status_calllog)
 
         findViewById<Button>(R.id.btn_role).setOnClickListener {
-            startActivityForResult(
-                roleManager.createRequestRoleIntent(RoleManager.ROLE_CALL_REDIRECTION),
-                RC_ROLE
+            roleLauncher.launch(
+                roleManager.createRequestRoleIntent(RoleManager.ROLE_CALL_REDIRECTION)
             )
         }
 
         findViewById<Button>(R.id.btn_calllog).setOnClickListener {
-            requestPermissions(arrayOf(Manifest.permission.WRITE_CALL_LOG), RC_PERMISSION)
+            permissionLauncher.launch(Manifest.permission.WRITE_CALL_LOG)
         }
     }
 
     override fun onResume() {
         super.onResume()
         updateStatus()
-    }
-
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        if (requestCode == RC_ROLE) {
-            updateStatus()
-        }
-    }
-
-    override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<out String>,
-        grantResults: IntArray
-    ) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if (requestCode == RC_PERMISSION) {
-            updateStatus()
-        }
     }
 
     private fun updateStatus() {
@@ -73,10 +66,5 @@ class MainActivity : Activity() {
         } else {
             getString(R.string.status_calllog_ng) + "\n" + getString(R.string.status_calllog_hint)
         }
-    }
-
-    companion object {
-        private const val RC_ROLE = 1
-        private const val RC_PERMISSION = 2
     }
 }

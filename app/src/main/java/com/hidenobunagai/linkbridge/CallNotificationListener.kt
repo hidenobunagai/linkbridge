@@ -15,14 +15,16 @@ class CallNotificationListener : NotificationListenerService() {
 
     override fun onNotificationPosted(sbn: StatusBarNotification) {
         if (!isCallNotification(sbn)) return
-        PendingRedirectStore.setCallStartMs(this, sbn.postTime)
-        Log.i(TAG, "Rakuten Link call notification posted")
+        // 通話中通知は更新 (再 posted) されるため、最初の posted 時刻だけを開始時刻として記録する
+        PendingRedirectStore.setCallStartMsIfAbsent(this, sbn.postTime)
+        Log.i(TAG, "Call notification posted: key=${sbn.key} postTime=${sbn.postTime}")
     }
 
     override fun onNotificationRemoved(sbn: StatusBarNotification) {
         if (!isCallNotification(sbn)) return
         val callStartMs = PendingRedirectStore.takeCallStartMs(this)
         val pending = PendingRedirectStore.take(this)
+        Log.i(TAG, "Call notification removed: key=${sbn.key} callStartMs=$callStartMs")
 
         if (pending == null ||
             !isPendingRedirectFresh(pending.second, System.currentTimeMillis(), PENDING_WINDOW_MS)

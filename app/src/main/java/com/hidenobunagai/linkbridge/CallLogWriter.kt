@@ -32,10 +32,16 @@ internal object PendingRedirectStore {
         return if (number.isNullOrBlank()) null else number to timeMs
     }
 
-    /** 通話開始時刻を保存する (通知 posted 時) */
-    fun setCallStartMs(context: Context, timeMs: Long) {
-        context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE).edit()
-            .putLong(KEY_CALL_START_MS, timeMs).apply()
+    /**
+     * 通話開始時刻を保存する (通知 posted 時)。
+     * 楽天リンクは通話中に通知を更新 (再 posted) するため、最初の posted のみ記録する
+     * (後から上書きすると、切る直前に更新が来た場合に通話時間が 0 秒になる)。
+     */
+    fun setCallStartMsIfAbsent(context: Context, timeMs: Long) {
+        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        if (!prefs.contains(KEY_CALL_START_MS)) {
+            prefs.edit().putLong(KEY_CALL_START_MS, timeMs).apply()
+        }
     }
 
     /** 通話開始時刻を読み出し、消去する */

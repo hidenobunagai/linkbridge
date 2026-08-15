@@ -35,5 +35,6 @@ kotlin {
 
 dependencies {
     implementation("androidx.activity:activity:1.13.0")
+    implementation("com.google.android.material:material:1.13.0")
     testImplementation("junit:junit:4.13.2")
 }

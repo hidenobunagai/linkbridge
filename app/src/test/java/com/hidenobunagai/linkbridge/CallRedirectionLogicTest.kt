@@ -43,10 +43,22 @@ class CallRedirectionLogicTest {
     }
 
     @Test
+    fun `プラス記号なしの81形式でも変換する`() {
+        assertEquals("08068811852", toNationalFormat("818068811852"))
+        assertEquals("0312345678", toNationalFormat("81312345678"))
+    }
+
+    @Test
     fun `変換不要な番号はそのまま返る`() {
         assertEquals("08068811852", toNationalFormat("08068811852"))
         assertEquals("+14155550100", toNationalFormat("+14155550100"))
         assertEquals("*123#", toNationalFormat("*123#"))
         assertEquals("", toNationalFormat(""))
+    }
+
+    @Test
+    fun `81の後に0が続く不正な番号は変換しない`() {
+        assertEquals("+81012345678", toNationalFormat("+81012345678"))
+        assertEquals("8112345678", toNationalFormat("8112345678"))
     }
 }

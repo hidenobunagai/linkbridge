@@ -3,13 +3,18 @@ package com.hidenobunagai.linkbridge
 /**
  * 楽天リンクへ転送してよい通常の電話番号を返す。転送すべきでない場合は null を返す。
  *
- * ショートコード (*123# など)・USSD・非 tel スキーム (sip: など) は
- * 楽天リンクでは扱えないため、通常発信のまま通す対象とする。
+ * ショートコード (*123# など)・USSD・非 tel スキーム (sip: など)・
+ * 特番 (171/188/147/148/1417 など)・ナビダイヤル (0570) は
+ * 楽天リンクでは発信できないため、通常発信のまま通す対象とする。
  */
 internal fun phoneNumberForRedirect(scheme: String?, number: String?): String? {
     if (scheme != "tel") return null
     if (number.isNullOrBlank()) return null
     if (number.any { it == '*' || it == '#' }) return null
+    // 特番・サービス番号 (171/188/1417 など) は桁数が少ないため、8 桁未満は通常発信のまま通す
+    if (number.count { it.isDigit() } < 8) return null
+    // ナビダイヤル (0570) は楽天リンクで発信できないため通常発信のまま通す
+    if (number.startsWith("0570") || number.startsWith("+81570")) return null
     return number
 }
 

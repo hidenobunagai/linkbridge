@@ -37,6 +37,27 @@ class CallRedirectionLogicTest {
     }
 
     @Test
+    fun `特番は転送せず通常発信のまま通す`() {
+        assertNull(phoneNumberForRedirect("tel", "171"))
+        assertNull(phoneNumberForRedirect("tel", "188"))
+        assertNull(phoneNumberForRedirect("tel", "147"))
+        assertNull(phoneNumberForRedirect("tel", "148"))
+        assertNull(phoneNumberForRedirect("tel", "1417"))
+    }
+
+    @Test
+    fun `ナビダイヤルは転送せず通常発信のまま通す`() {
+        assertNull(phoneNumberForRedirect("tel", "0570123456"))
+        assertNull(phoneNumberForRedirect("tel", "+81570123456"))
+    }
+
+    @Test
+    fun `シャープ付き短縮番号は転送しない`() {
+        assertNull(phoneNumberForRedirect("tel", "#7119"))
+        assertNull(phoneNumberForRedirect("tel", "#8000"))
+    }
+
+    @Test
     fun `E164の国内番号は0から始まる形式に変換する`() {
         assertEquals("08068811852", toDialableNumber("+818068811852"))
         assertEquals("0312345678", toDialableNumber("+81312345678"))

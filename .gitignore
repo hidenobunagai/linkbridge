@@ -6,3 +6,5 @@ local.properties
 .kotlin/
 .DS_Store
 .headroom/
+keystore/
+keystore.properties

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Android 12+: Material You dynamic colors (follows wallpaper) -->
+    <style name="Theme.LinkBridge" parent="Theme.Material3.DynamicColors.DayNight">
+        <item name="android:windowSplashScreenBackground">@color/launcher_grad_end</item>
+    </style>
+</resources>

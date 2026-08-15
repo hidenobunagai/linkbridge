@@ -1,16 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">LinkBridge</string>
+    <string name="subtitle">ダイヤラー発信を楽天リンクへ転送</string>
+
+    <string name="setup_title">セットアップ状況</string>
+    <string name="setup_progress">セットアップ %1$d/%2$d 完了</string>
+
+    <string name="card_role_title">通話転送アプリ</string>
+    <string name="card_role_desc">電話アプリからの発信を楽天リンクへ引き継ぐために必要です。</string>
     <string name="btn_role">デフォルト通話転送アプリに設定</string>
-    <string name="btn_calllog">通話履歴への書き込みを許可</string>
-    <string name="btn_overlay">画面の上に表示を許可</string>
-    <string name="status_role_ok">通話転送アプリ: 登録済み</string>
-    <string name="status_role_ng">通話転送アプリ: 未登録</string>
-    <string name="status_calllog_ok">通話履歴の書き込み: 許可済み</string>
-    <string name="status_calllog_ng">通話履歴の書き込み: 未許可</string>
-    <string name="status_calllog_hint">※ 一部端末では付与できない場合があります。
-adb shell pm grant com.hidenobunagai.linkbridge android.permission.WRITE_CALL_LOG</string>
-    <string name="status_overlay_ok">画面の上に表示: 許可済み</string>
-    <string name="status_overlay_ng">画面の上に表示: 未許可</string>
-    <string name="status_overlay_hint">※ 通話転送時に楽天リンクを開くために必要です。</string>
+
+    <string name="card_calllog_title">通話履歴への書き込み</string>
+    <string name="card_calllog_desc">転送した通話を履歴に正しく記録するために必要です。</string>
+    <string name="btn_calllog">許可する</string>
+    <string name="hint_calllog">※ 一部端末では付与できない場合があります。\nadb shell pm grant com.hidenobunagai.linkbridge android.permission.WRITE_CALL_LOG</string>
+
+    <string name="card_overlay_title">画面の上に表示</string>
+    <string name="card_overlay_desc">バックグラウンドから楽天リンクを開くために必要です。</string>
+    <string name="btn_overlay">許可する</string>
+    <string name="hint_overlay">※ 通話転送時に楽天リンクを開くために必要です。</string>
+
+    <string name="status_done">完了</string>
+    <string name="status_todo">未設定</string>
 </resources>

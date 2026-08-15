@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Material 3 baseline (violet) fallback palette for Android 11, dark -->
+    <color name="md_primary">#D0BCFF</color>
+    <color name="md_onPrimary">#381E72</color>
+    <color name="md_primaryContainer">#4F378B</color>
+    <color name="md_onPrimaryContainer">#EADDFF</color>
+    <color name="md_secondary">#CCC2DC</color>
+    <color name="md_onSecondary">#332D41</color>
+    <color name="md_secondaryContainer">#4A4458</color>
+    <color name="md_onSecondaryContainer">#E8DEF8</color>
+    <color name="md_tertiary">#EFB8C8</color>
+    <color name="md_onTertiary">#492532</color>
+    <color name="md_tertiaryContainer">#633B48</color>
+    <color name="md_onTertiaryContainer">#FFD8E4</color>
+    <color name="md_error">#F2B8B5</color>
+    <color name="md_onError">#601410</color>
+    <color name="md_errorContainer">#8C1D18</color>
+    <color name="md_onErrorContainer">#F9DEDC</color>
+    <color name="md_background">#1C1B1F</color>
+    <color name="md_onBackground">#E6E1E5</color>
+    <color name="md_surface">#1C1B1F</color>
+    <color name="md_onSurface">#E6E1E5</color>
+    <color name="md_surfaceVariant">#49454F</color>
+    <color name="md_onSurfaceVariant">#CAC4D0</color>
+    <color name="md_outline">#938F99</color>
+
+    <!-- Status chips -->
+    <color name="status_ok_bg">#1B3A26</color>
+    <color name="status_ok_fg">#A4E8B4</color>
+    <color name="status_ng_bg">#3E2A14</color>
+    <color name="status_ng_fg">#FFD28A</color>
+
+    <!-- Launcher icon (unchanged in dark) -->
+    <color name="launcher_grad_start">#8E6CFF</color>
+    <color name="launcher_grad_end">#4A148C</color>
+</resources>

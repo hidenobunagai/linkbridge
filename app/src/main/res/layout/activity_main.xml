@@ -37,6 +37,19 @@
         android:id="@+id/status_calllog"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:paddingTop="8dp"
+        android:paddingBottom="16dp" />
+
+    <Button
+        android:id="@+id/btn_overlay"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/btn_overlay" />
+
+    <TextView
+        android:id="@+id/status_overlay"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
         android:paddingTop="8dp" />
 
 </LinearLayout>

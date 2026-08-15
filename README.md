@@ -29,6 +29,12 @@
    adb shell pm grant com.hidenobunagai.linkbridge android.permission.WRITE_CALL_LOG
    ```
 
+4. 「画面の上に表示を許可」(`SYSTEM_ALERT_WINDOW`)。通話転送時に楽天リンクをバックグラウンドから起動するために必須 (Android のバックグラウンド起動制限の免除)。adb でも付与可:
+
+   ```sh
+   adb shell appops set com.hidenobunagai.linkbridge SYSTEM_ALERT_WINDOW allow
+   ```
+
 ## テスト
 
 ```sh

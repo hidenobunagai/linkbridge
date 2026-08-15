@@ -2,6 +2,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
     <uses-permission android:name="android.permission.WRITE_CALL_LOG" />
+    <!-- 通話転送時に楽天リンクをバックグラウンドから起動するための BAL 免除に必要 -->
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
 
     <queries>
         <package android:name="jp.co.rakuten.mobile.rcs" />

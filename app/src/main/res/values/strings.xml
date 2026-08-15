@@ -3,10 +3,14 @@
     <string name="app_name">LinkBridge</string>
     <string name="btn_role">デフォルト通話転送アプリに設定</string>
     <string name="btn_calllog">通話履歴への書き込みを許可</string>
+    <string name="btn_overlay">画面の上に表示を許可</string>
     <string name="status_role_ok">通話転送アプリ: 登録済み</string>
     <string name="status_role_ng">通話転送アプリ: 未登録</string>
     <string name="status_calllog_ok">通話履歴の書き込み: 許可済み</string>
     <string name="status_calllog_ng">通話履歴の書き込み: 未許可</string>
     <string name="status_calllog_hint">※ 一部端末では付与できない場合があります。
 adb shell pm grant com.hidenobunagai.linkbridge android.permission.WRITE_CALL_LOG</string>
+    <string name="status_overlay_ok">画面の上に表示: 許可済み</string>
+    <string name="status_overlay_ng">画面の上に表示: 未許可</string>
+    <string name="status_overlay_hint">※ 通話転送時に楽天リンクを開くために必要です。</string>
 </resources>

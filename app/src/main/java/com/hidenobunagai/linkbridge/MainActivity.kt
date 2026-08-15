@@ -1,11 +1,14 @@
 package com.hidenobunagai.linkbridge
 
 import android.Manifest
+import android.app.NotificationManager
 import android.app.role.RoleManager
+import android.content.ComponentName
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.res.ColorStateList
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
 import android.view.View
@@ -26,11 +29,14 @@ class MainActivity : ComponentActivity() {
     private lateinit var chipRole: TextView
     private lateinit var chipCallLog: TextView
     private lateinit var chipOverlay: TextView
+    private lateinit var chipNotif: TextView
     private lateinit var hintCallLog: TextView
     private lateinit var hintOverlay: TextView
+    private lateinit var hintNotif: TextView
     private lateinit var btnRole: Button
     private lateinit var btnCallLog: Button
     private lateinit var btnOverlay: Button
+    private lateinit var btnNotif: Button
 
     private val roleLauncher: ActivityResultLauncher<Intent> =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
@@ -47,6 +53,11 @@ class MainActivity : ComponentActivity() {
             updateStatus()
         }
 
+    private val notifLauncher: ActivityResultLauncher<Intent> =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+            updateStatus()
+        }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
@@ -58,11 +69,14 @@ class MainActivity : ComponentActivity() {
         chipRole = findViewById(R.id.status_role)
         chipCallLog = findViewById(R.id.status_calllog)
         chipOverlay = findViewById(R.id.status_overlay)
+        chipNotif = findViewById(R.id.status_notif)
         hintCallLog = findViewById(R.id.hint_calllog)
         hintOverlay = findViewById(R.id.hint_overlay)
+        hintNotif = findViewById(R.id.hint_notif)
         btnRole = findViewById(R.id.btn_role)
         btnCallLog = findViewById(R.id.btn_calllog)
         btnOverlay = findViewById(R.id.btn_overlay)
+        btnNotif = findViewById(R.id.btn_notif)
 
         btnRole.setOnClickListener {
             roleLauncher.launch(
@@ -81,6 +95,10 @@ class MainActivity : ComponentActivity() {
                     Uri.parse("package:$packageName")
                 )
             )
+        }
+
+        btnNotif.setOnClickListener {
+            notifLauncher.launch(Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS))
         }
     }
 
@@ -101,9 +119,17 @@ class MainActivity : ComponentActivity() {
         val overlayGranted = Settings.canDrawOverlays(this)
         setItemStatus(chipOverlay, btnOverlay, hintOverlay, overlayGranted)
 
-        val done = listOf(roleHeld, callLogGranted, overlayGranted).count { it }
-        progressBar.setProgressCompat(done * 100 / 3, true)
-        progressText.text = getString(R.string.setup_progress, done, 3)
+        // getEnabledNotificationListeners() は API 36 で削除されたため、API 33+ の
+        // isNotificationListenerAccessGranted() を使用する
+        val notifGranted = Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+            getSystemService(NotificationManager::class.java).isNotificationListenerAccessGranted(
+                ComponentName(this, CallNotificationListener::class.java)
+            )
+        setItemStatus(chipNotif, btnNotif, hintNotif, notifGranted)
+
+        val done = listOf(roleHeld, callLogGranted, overlayGranted, notifGranted).count { it }
+        progressBar.setProgressCompat(done * 100 / 4, true)
+        progressText.text = getString(R.string.setup_progress, done, 4)
     }
 
     private fun setItemStatus(chip: TextView, button: Button, hint: TextView?, done: Boolean) {

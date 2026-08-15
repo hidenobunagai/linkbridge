@@ -89,4 +89,13 @@ class CallRedirectionLogicTest {
         assertEquals("+81012345678", toDialableNumber("+81012345678"))
         assertEquals("+818012345", toDialableNumber("+818012345"))
     }
+
+    @Test
+    fun `保留中の転送情報の鮮度判定`() {
+        val now = 1_000_000L
+        assertTrue(isPendingRedirectFresh(now - 60_000, now, 10 * 60 * 1000L))
+        assertTrue(isPendingRedirectFresh(now, now, 10 * 60 * 1000L))
+        assertFalse(isPendingRedirectFresh(now - 11 * 60 * 1000L, now, 10 * 60 * 1000L))
+        assertFalse(isPendingRedirectFresh(now + 5_000, now, 10 * 60 * 1000L))
+    }
 }

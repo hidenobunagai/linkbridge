@@ -20,6 +20,12 @@
     <string name="btn_overlay">許可する</string>
     <string name="hint_overlay">※ 通話転送時に楽天リンクを開くために必要です。</string>
 
+    <string name="card_notif_title">通知へのアクセス</string>
+    <string name="card_notif_desc">楽天リンクで実際に発信された通話だけを履歴に記録するために必要です。</string>
+    <string name="btn_notif">許可する</string>
+    <string name="hint_notif">※ 発信せずに戻った通話 (通知が出ないもの) は履歴に残りません。</string>
+    <string name="notif_listener_label">LinkBridge 通話履歴補完</string>
+
     <string name="status_done">完了</string>
     <string name="status_todo">未設定</string>
 </resources>

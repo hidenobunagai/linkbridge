@@ -39,3 +39,12 @@ internal fun toDialableNumber(number: String): String {
     }
     return number
 }
+
+/**
+ * 保留中の転送情報が、まだ有効な新しいものかどうかを判定する。
+ * 転送から時間が経ちすぎている場合は、別の通話 (着信など) と誤マッチさせない。
+ */
+internal fun isPendingRedirectFresh(redirectTimeMs: Long, nowMs: Long, windowMs: Long): Boolean {
+    val age = nowMs - redirectTimeMs
+    return age in 0..windowMs
+}

@@ -14,21 +14,23 @@ internal fun phoneNumberForRedirect(scheme: String?, number: String?): String? {
 }
 
 /**
- * Rakuten Link は国内番号形式 (080... など) でないと発信できないため、
- * 国番号 81 形式 (+81... または プラス記号が落ちた 81...) を国内形式 (0...) に変換する。
- * 日本以外の番号や変換不要な番号はそのまま返す。
- *
- * プラス記号なしの 81... で届くケースがあるため、両方の形を扱う。
- * (例) +818068811852 / 818068811852 → 08068811852
+ * Rakuten Link が発信できる形式に変換する。Rakuten Link は "+" 付き番号を扱えないため:
+ * - 日本の国内番号 (+81... / 81...) → 0 始まり (080... など)
+ * - 海外番号 (+XX...) → 国際プレフィックス 010 形式 (010XX...)
+ * - それ以外はそのまま返す
  */
-internal fun toNationalFormat(number: String): String {
+internal fun toDialableNumber(number: String): String {
     val body = number.removePrefix("+")
-    // 81 + 国内番号 (3〜9 で始まる 9〜10 桁)。"+81" のみ長さ 12〜13、プラスなしで 11〜12。
+    // 日本の国内番号: 81 + (3〜9 で始まる 9〜10 桁)
     if (body.startsWith("81") && body.length in 11..12) {
         val rest = body.drop(2)
         if (rest.firstOrNull()?.let { it in '3'..'9' } == true) {
             return "0$rest"
         }
+    }
+    // 海外番号: E.164 (+XX...) → 010 プレフィックス形式
+    if (number.startsWith("+") && !body.startsWith("81")) {
+        return "010$body"
     }
     return number
 }

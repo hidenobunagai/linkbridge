@@ -38,27 +38,34 @@ class CallRedirectionLogicTest {
 
     @Test
     fun `E164の国内番号は0から始まる形式に変換する`() {
-        assertEquals("08068811852", toNationalFormat("+818068811852"))
-        assertEquals("0312345678", toNationalFormat("+81312345678"))
+        assertEquals("08068811852", toDialableNumber("+818068811852"))
+        assertEquals("0312345678", toDialableNumber("+81312345678"))
     }
 
     @Test
     fun `プラス記号なしの81形式でも変換する`() {
-        assertEquals("08068811852", toNationalFormat("818068811852"))
-        assertEquals("0312345678", toNationalFormat("81312345678"))
+        assertEquals("08068811852", toDialableNumber("818068811852"))
+        assertEquals("0312345678", toDialableNumber("81312345678"))
+    }
+
+    @Test
+    fun `海外番号は010プレフィックス形式に変換する`() {
+        assertEquals("01033123456789", toDialableNumber("+33123456789"))
+        assertEquals("01014155550100", toDialableNumber("+14155550100"))
+        assertEquals("010442012345678", toDialableNumber("+442012345678"))
     }
 
     @Test
     fun `変換不要な番号はそのまま返る`() {
-        assertEquals("08068811852", toNationalFormat("08068811852"))
-        assertEquals("+14155550100", toNationalFormat("+14155550100"))
-        assertEquals("*123#", toNationalFormat("*123#"))
-        assertEquals("", toNationalFormat(""))
+        assertEquals("08068811852", toDialableNumber("08068811852"))
+        assertEquals("01033123456789", toDialableNumber("01033123456789"))
+        assertEquals("*123#", toDialableNumber("*123#"))
+        assertEquals("", toDialableNumber(""))
     }
 
     @Test
-    fun `81の後に0が続く不正な番号は変換しない`() {
-        assertEquals("+81012345678", toNationalFormat("+81012345678"))
-        assertEquals("8112345678", toNationalFormat("8112345678"))
+    fun `不正な81番号は変換しない`() {
+        assertEquals("+81012345678", toDialableNumber("+81012345678"))
+        assertEquals("+818012345", toDialableNumber("+818012345"))
     }
 }

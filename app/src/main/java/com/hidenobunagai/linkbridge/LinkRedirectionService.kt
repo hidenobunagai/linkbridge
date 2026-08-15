@@ -22,8 +22,8 @@ class LinkRedirectionService : CallRedirectionService() {
                 return
             }
 
-        // Rakuten Link は国内番号形式 (080...) でないと発信できないため、+81... を変換する
-        val dialNumber = toNationalFormat(number)
+        // Rakuten Link は "+" 付き番号を扱えないため、国内は 0 始まり、海外は 010 形式に変換する
+        val dialNumber = toDialableNumber(number)
 
         val intent = Intent(Intent.ACTION_VIEW, Uri.fromParts("tel", dialNumber, null))
             .setPackage(RAKUTEN_LINK_PACKAGE)

@@ -36,9 +36,14 @@ class LinkRedirectionService : CallRedirectionService() {
             return
         }
 
-        insertCallLog(dialNumber)
+        // まず通常通話をキャンセルしてから楽天リンクへ引き継ぐ (発信画面が残る時間を最小化)
         cancelCall()
-        startActivity(intent)
+        try {
+            startActivity(intent)
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to launch Rakuten Link", e)
+        }
+        insertCallLog(dialNumber)
     }
 
     private fun insertCallLog(number: String) {

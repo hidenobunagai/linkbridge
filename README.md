@@ -1,6 +1,6 @@
 # LinkBridge
 
-ストックダイヤラーからの発信を楽天リンク (`jp.co.rakuten.mobile.rcs`) に転送する個人用 Android アプリ。
+ストックダイヤラーからの発信を楽天リンク (`jp.co.rakuten.mobile.rcs` / 法人向け Rakuten Link Office `jp.co.rakuten.mobile.rcs.business`) に転送する個人用 Android アプリ。
 
 ## 動作
 

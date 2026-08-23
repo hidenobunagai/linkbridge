@@ -44,11 +44,11 @@ class CallNotificationListener : NotificationListenerService() {
     }
 
     private fun isCallNotification(sbn: StatusBarNotification): Boolean =
-        sbn.packageName == RAKUTEN_LINK_PACKAGE && sbn.notification.channelId == CALL_ONGOING_CHANNEL
+        sbn.packageName in LinkRedirectionService.RAKUTEN_LINK_PACKAGES &&
+            sbn.notification.channelId == CALL_ONGOING_CHANNEL
 
     companion object {
         private const val TAG = "LinkBridge"
-        private const val RAKUTEN_LINK_PACKAGE = "jp.co.rakuten.mobile.rcs"
         private const val CALL_ONGOING_CHANNEL = "notification_call_ongoing"
 
         /** 転送から通話開始通知までの許容時間 */

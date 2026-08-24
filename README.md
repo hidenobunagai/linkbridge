@@ -2,6 +2,8 @@
 
 ストックダイヤラーからの発信を楽天リンク (`jp.co.rakuten.mobile.rcs` / 法人向け Rakuten Link Office `jp.co.rakuten.mobile.rcs.business`) に転送する個人用 Android アプリ。
 
+![LinkBridge 概要](linkbridge_summary.png)
+
 ## 動作
 
 1. 「デフォルト通話転送アプリ」に設定すると、ダイヤラーからの発信が `CallRedirectionService` に届く

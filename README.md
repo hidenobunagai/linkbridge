@@ -67,6 +67,7 @@ Galaxy のディープスリープや One UI の「バックグラウンドデ�
 - **遮断中**: `cmd package suspend jp.co.rakuten.mobile.rcs` で楽天リンクを停止。着信はキャリア網(VoLTE)で標準電話アプリに届く
 - **発信時**: `LinkRedirectionService` が自動で `unsuspend` → 楽天リンク起動 (約0.4秒待機)
 - **終話後**: `CallNotificationListener` が通知終了を検知して 3秒後に再 `suspend`
+- **発信せずに閉じた場合**: `LinkBridgeAccessibilityService` が楽天リンクの foreground → background 遷移を検知し、通話中でなければ 1.5秒後に再 `suspend` (発信キャンセルで開きっぱなしになるのを防ぐ)
 
 ### セットアップ
 
@@ -75,6 +76,14 @@ Galaxy のディープスリープや One UI の「バックグラウンドデ�
    - ガイド: Shizuku アプリ内の「ワイヤレスデバッグ経由で開始」手順に従う
 3. LinkBridge を開き、一番下の「着信の完全遮断 (Shizuku)」カードで「権限を付与」→ 許可
 4. 「遮断を有効にする」を押す → 楽天リンクが停止 (アイコンが薄く表示)
+5. (推奨)「閉じたら再遮断 (Accessibility)」カード →「ユーザー補助設定を開く」→ LinkBridge を ON。発信せずに閉じた場合に自動で再遮断される。adb でも付与可:
+
+   ```sh
+   adb shell settings put secure enabled_accessibility_services com.hidenobunagai.linkbridge/.LinkBridgeAccessibilityService
+   adb shell settings put secure accessibility_enabled 1
+   ```
+
+   > 既に有効なユーザー補助サービスがある場合は、`:` (コロン) 区切りで既存リストに追記してください。
 
 - 「一時的に許可 (10分)」で手動で連絡先同期や更新が可能。10分後に自動で再遮断
 - 遮断を無効に戻すときは同カードで「遮断を無効にする」

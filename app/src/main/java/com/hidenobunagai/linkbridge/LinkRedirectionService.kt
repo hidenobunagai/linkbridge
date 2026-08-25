@@ -35,20 +35,35 @@ class LinkRedirectionService : CallRedirectionService() {
             return
         }
 
-        // 履歴補完は実際に発信されたかを通知監視 (CallNotificationListener) で検知してから
-        // 行うため、ここでは引き継いだ番号を保存するだけ
-        PendingRedirectStore.save(this, dialNumber)
-
-        // Shizuku ブロック有効時は発信直前に一時的に unsuspend (VPN不要の完全遮断を再現)
-        if (ShizukuBlocker.isBlockEnabled(this) && ShizukuBlocker.isShizukuAvailable() && ShizukuBlocker.isPermissionGranted()) {
+        // Shizuku 遮断が有効な場合: 発信直前に unsuspend を試みる。
+        // Shizuku 未起動/権限なし/unsuspend 失敗時は通常発信へフォールバック (課金は発生するが通話自体は失敗させない)
+        val blockEnabled = ShizukuBlocker.isBlockEnabled(this)
+        if (blockEnabled) {
+            val shizukuReady = ShizukuBlocker.isShizukuAvailable() && ShizukuBlocker.isPermissionGranted()
+            if (!shizukuReady) {
+                Log.w(TAG, "Shizuku not ready (binder dead or no perm): fallback to normal call for $dialNumber")
+                placeCallUnmodified()
+                return
+            }
             try {
                 Log.i(TAG, "Shizuku block is enabled: unsuspending Rakuten Link for outgoing call")
                 ShizukuBlocker.unsuspendAllSync()
                 Thread.sleep(350)
+                if (ShizukuBlocker.isAnySuspended(this)) {
+                    Log.w(TAG, "Still suspended after unsuspend: fallback to normal call")
+                    placeCallUnmodified()
+                    return
+                }
             } catch (e: Exception) {
-                Log.w(TAG, "Shizuku unsuspend failed, trying to launch anyway", e)
+                Log.w(TAG, "Shizuku unsuspend failed: fallback to normal call", e)
+                placeCallUnmodified()
+                return
             }
         }
+
+        // 履歴補完は実際に発信されたかを通知監視 (CallNotificationListener) で検知してから
+        // 行うため、ここでは引き継いだ番号を保存するだけ
+        PendingRedirectStore.save(this, dialNumber)
 
         // まず通常通話をキャンセルしてから楽天リンクへ引き継ぐ (発信画面が残る時間を最小化)
         cancelCall()

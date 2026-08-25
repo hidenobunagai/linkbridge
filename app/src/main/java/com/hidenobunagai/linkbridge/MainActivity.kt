@@ -47,6 +47,9 @@ class MainActivity : ComponentActivity() {
     private lateinit var btnShizukuToggle: Button
     private lateinit var btnShizukuTemp: Button
     private lateinit var btnShizukuOpen: Button
+    private lateinit var chipA11y: TextView
+    private lateinit var hintA11y: TextView
+    private lateinit var btnA11y: Button
 
     private val roleLauncher: ActivityResultLauncher<Intent> =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
@@ -64,6 +67,11 @@ class MainActivity : ComponentActivity() {
         }
 
     private val notifLauncher: ActivityResultLauncher<Intent> =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+            updateStatus()
+        }
+
+    private val a11yLauncher: ActivityResultLauncher<Intent> =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
             updateStatus()
         }
@@ -123,11 +131,17 @@ class MainActivity : ComponentActivity() {
         btnShizukuToggle = findViewById(R.id.btn_shizuku_toggle)
         btnShizukuTemp = findViewById(R.id.btn_shizuku_temp)
         btnShizukuOpen = findViewById(R.id.btn_shizuku_open)
+        chipA11y = findViewById(R.id.status_a11y)
+        hintA11y = findViewById(R.id.hint_a11y)
+        btnA11y = findViewById(R.id.btn_a11y)
 
         btnShizukuPerm.setOnClickListener { ShizukuBlocker.requestPermission() }
         btnShizukuToggle.setOnClickListener { toggleShizukuBlock() }
         btnShizukuTemp.setOnClickListener { tempAllowShizuku() }
         btnShizukuOpen.setOnClickListener { openShizukuApp() }
+        btnA11y.setOnClickListener {
+            a11yLauncher.launch(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
+        }
 
         try {
             Shizuku.addRequestPermissionResultListener(shizukuPermListener)
@@ -175,6 +189,7 @@ class MainActivity : ComponentActivity() {
         progressText.text = getString(R.string.setup_progress, done, 4)
 
         updateShizukuCard()
+        updateA11yCard()
     }
 
     private fun updateStatusOnUi() {
@@ -248,6 +263,25 @@ class MainActivity : ComponentActivity() {
                 btnShizukuToggle.text = getString(R.string.btn_shizuku_enable)
                 btnShizukuToggle.visibility = View.VISIBLE
             }
+        }
+    }
+
+    private fun updateA11yCard() {
+        val enabled = LinkBridgeAccessibilityService.isEnabled(this)
+        if (enabled) {
+            chipA11y.text = getString(R.string.status_done)
+            chipA11y.setTextColor(getColor(R.color.status_ok_fg))
+            chipA11y.backgroundTintList = ColorStateList.valueOf(getColor(R.color.status_ok_bg))
+            setChipIcon(chipA11y, R.drawable.ic_check_circle, R.color.status_ok_fg)
+            hintA11y.text = getString(R.string.hint_a11y_on)
+            btnA11y.visibility = View.GONE
+        } else {
+            chipA11y.text = getString(R.string.status_todo)
+            chipA11y.setTextColor(getColor(R.color.status_ng_fg))
+            chipA11y.backgroundTintList = ColorStateList.valueOf(getColor(R.color.status_ng_bg))
+            setChipIcon(chipA11y, R.drawable.ic_cancel, R.color.status_ng_fg)
+            hintA11y.text = getString(R.string.hint_a11y_off)
+            btnA11y.visibility = View.VISIBLE
         }
     }
 

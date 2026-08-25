@@ -47,4 +47,12 @@
     <string name="status_ready">準備完了</string>
     <string name="status_need_perm">要許可</string>
     <string name="status_no_shizuku">未導入</string>
+
+    <!-- Accessibility: 閉じたら再suspend -->
+    <string name="card_a11y_title">閉じたら再遮断 (Accessibility)</string>
+    <string name="card_a11y_desc">楽天リンクを発信せずに閉じたときに自動で再停止します。OFFでも通話後の再停止は動作しますが、キャンセル時に開きっぱなしになるのを防ぐにはONがおすすめです。</string>
+    <string name="a11y_service_desc">楽天リンクが閉じられたことを検知して、Shizuku遮断を自動で再開するために使用します。画面の内容を読み取ることはありません。</string>
+    <string name="hint_a11y_on">有効: 閉じたら1.5秒後に再停止します。</string>
+    <string name="hint_a11y_off">無効: 発信キャンセル時に開きっぱなしになります。ONにすると自動で戻ります。</string>
+    <string name="btn_a11y">ユーザー補助設定を開く</string>
 </resources>

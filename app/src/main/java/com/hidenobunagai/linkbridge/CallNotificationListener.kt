@@ -41,6 +41,12 @@ class CallNotificationListener : NotificationListenerService() {
         }
         insertOutgoingCallLog(this, pending.first, durationSeconds)
         Log.i(TAG, "Logged Rakuten Link call: duration=${durationSeconds}s")
+
+        // Shizuku ブロック有効時は通話終了後に再び suspend して着信遮断状態に戻す
+        if (ShizukuBlocker.isBlockEnabled(this)) {
+            Log.i(TAG, "Shizuku block enabled: resuspending Rakuten Link after call")
+            ShizukuBlocker.resuspendAfterCallAsync(this, 3000)
+        }
     }
 
     private fun isCallNotification(sbn: StatusBarNotification): Boolean =

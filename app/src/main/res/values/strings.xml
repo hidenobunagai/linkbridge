@@ -28,4 +28,23 @@
 
     <string name="status_done">完了</string>
     <string name="status_todo">未設定</string>
+
+    <!-- Shizuku 着信遮断 -->
+    <string name="card_shizuku_title">着信の完全遮断 (Shizuku)</string>
+    <string name="card_shizuku_desc">楽天リンクを一時停止(suspend)して、着信を標準電話アプリへ強制フォールバックします。Tailscale等のVPNと共存できます。発信時は自動で再開、終話後に再停止します。</string>
+    <string name="hint_shizuku_no">Shizukuアプリが見つかりません。https://shizuku.rikka.app からインストールし、adb/ワイヤレスデバッグで起動してください。</string>
+    <string name="hint_shizuku_dead">Shizukuサービスが停止しています。Shizukuアプリを開いて「開始」を押してください（再起動後は再実行が必要）。</string>
+    <string name="hint_shizuku_perm">Shizukuの権限が必要です。「権限を付与」を押して許可してください。</string>
+    <string name="hint_shizuku_rationale">「今後表示しない」で拒否されています。Shizukuアプリ &gt; LinkBridge &gt; 許可 に変更してください。</string>
+    <string name="hint_shizuku_ready">準備完了。遮断を有効にすると楽天リンクは停止し、着信は標準電話に届きます。</string>
+    <string name="hint_shizuku_active">遮断中: 楽天リンクは停止しています。発信時は自動で再開します。</string>
+    <string name="btn_shizuku_perm">権限を付与</string>
+    <string name="btn_shizuku_enable">遮断を有効にする</string>
+    <string name="btn_shizuku_disable">遮断を無効にする</string>
+    <string name="btn_shizuku_temp">一時的に許可 (10分)</string>
+    <string name="btn_shizuku_open">Shizukuを開く</string>
+    <string name="status_blocked">遮断中</string>
+    <string name="status_ready">準備完了</string>
+    <string name="status_need_perm">要許可</string>
+    <string name="status_no_shizuku">未導入</string>
 </resources>

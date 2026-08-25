@@ -39,6 +39,17 @@ class LinkRedirectionService : CallRedirectionService() {
         // 行うため、ここでは引き継いだ番号を保存するだけ
         PendingRedirectStore.save(this, dialNumber)
 
+        // Shizuku ブロック有効時は発信直前に一時的に unsuspend (VPN不要の完全遮断を再現)
+        if (ShizukuBlocker.isBlockEnabled(this) && ShizukuBlocker.isShizukuAvailable() && ShizukuBlocker.isPermissionGranted()) {
+            try {
+                Log.i(TAG, "Shizuku block is enabled: unsuspending Rakuten Link for outgoing call")
+                ShizukuBlocker.unsuspendAllSync()
+                Thread.sleep(350)
+            } catch (e: Exception) {
+                Log.w(TAG, "Shizuku unsuspend failed, trying to launch anyway", e)
+            }
+        }
+
         // まず通常通話をキャンセルしてから楽天リンクへ引き継ぐ (発信画面が残る時間を最小化)
         cancelCall()
         try {

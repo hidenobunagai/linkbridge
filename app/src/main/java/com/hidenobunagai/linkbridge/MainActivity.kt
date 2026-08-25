@@ -10,16 +10,20 @@ import android.content.res.ColorStateList
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.provider.Settings
 import android.view.View
 import android.widget.Button
 import android.widget.TextView
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import com.google.android.material.progressindicator.LinearProgressIndicator
+import rikka.shizuku.Shizuku
 
 class MainActivity : ComponentActivity() {
 
@@ -37,6 +41,12 @@ class MainActivity : ComponentActivity() {
     private lateinit var btnCallLog: Button
     private lateinit var btnOverlay: Button
     private lateinit var btnNotif: Button
+    private lateinit var chipShizuku: TextView
+    private lateinit var hintShizuku: TextView
+    private lateinit var btnShizukuPerm: Button
+    private lateinit var btnShizukuToggle: Button
+    private lateinit var btnShizukuTemp: Button
+    private lateinit var btnShizukuOpen: Button
 
     private val roleLauncher: ActivityResultLauncher<Intent> =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
@@ -57,6 +67,12 @@ class MainActivity : ComponentActivity() {
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
             updateStatus()
         }
+
+    private val shizukuPermListener = Shizuku.OnRequestPermissionResultListener { _, grantResult ->
+        Handler(Looper.getMainLooper()).post { updateStatus() }
+    }
+    private val shizukuBinderReceivedListener = Shizuku.OnBinderReceivedListener { updateStatusOnUi() }
+    private val shizukuBinderDeadListener = Shizuku.OnBinderDeadListener { updateStatusOnUi() }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
@@ -100,11 +116,38 @@ class MainActivity : ComponentActivity() {
         btnNotif.setOnClickListener {
             notifLauncher.launch(Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS))
         }
+
+        chipShizuku = findViewById(R.id.status_shizuku)
+        hintShizuku = findViewById(R.id.hint_shizuku)
+        btnShizukuPerm = findViewById(R.id.btn_shizuku_perm)
+        btnShizukuToggle = findViewById(R.id.btn_shizuku_toggle)
+        btnShizukuTemp = findViewById(R.id.btn_shizuku_temp)
+        btnShizukuOpen = findViewById(R.id.btn_shizuku_open)
+
+        btnShizukuPerm.setOnClickListener { ShizukuBlocker.requestPermission() }
+        btnShizukuToggle.setOnClickListener { toggleShizukuBlock() }
+        btnShizukuTemp.setOnClickListener { tempAllowShizuku() }
+        btnShizukuOpen.setOnClickListener { openShizukuApp() }
+
+        try {
+            Shizuku.addRequestPermissionResultListener(shizukuPermListener)
+            Shizuku.addBinderReceivedListener(shizukuBinderReceivedListener)
+            Shizuku.addBinderDeadListener(shizukuBinderDeadListener)
+        } catch (_: Exception) { }
     }
 
     override fun onResume() {
         super.onResume()
         updateStatus()
+    }
+
+    override fun onDestroy() {
+        try {
+            Shizuku.removeRequestPermissionResultListener(shizukuPermListener)
+            Shizuku.removeBinderReceivedListener(shizukuBinderReceivedListener)
+            Shizuku.removeBinderDeadListener(shizukuBinderDeadListener)
+        } catch (_: Exception) { }
+        super.onDestroy()
     }
 
     private fun updateStatus() {
@@ -130,6 +173,137 @@ class MainActivity : ComponentActivity() {
         val done = listOf(roleHeld, callLogGranted, overlayGranted, notifGranted).count { it }
         progressBar.setProgressCompat(done * 100 / 4, true)
         progressText.text = getString(R.string.setup_progress, done, 4)
+
+        updateShizukuCard()
+    }
+
+    private fun updateStatusOnUi() {
+        Handler(Looper.getMainLooper()).post { updateStatus() }
+    }
+
+    private fun updateShizukuCard() {
+        val available = ShizukuBlocker.isShizukuAvailable()
+        val permGranted = ShizukuBlocker.isPermissionGranted()
+        val blockEnabled = ShizukuBlocker.isBlockEnabled(this)
+        val isSuspended = try { ShizukuBlocker.isAnySuspended(this) } catch (_: Exception) { false }
+
+        // ボタン初期非表示
+        btnShizukuPerm.visibility = View.GONE
+        btnShizukuToggle.visibility = View.GONE
+        btnShizukuTemp.visibility = View.GONE
+        btnShizukuOpen.visibility = View.GONE
+
+        when {
+            !available -> {
+                chipShizuku.text = getString(R.string.status_no_shizuku)
+                chipShizuku.setTextColor(getColor(R.color.status_ng_fg))
+                chipShizuku.backgroundTintList = ColorStateList.valueOf(getColor(R.color.status_ng_bg))
+                setChipIcon(chipShizuku, R.drawable.ic_cancel, R.color.status_ng_fg)
+                hintShizuku.text = getString(R.string.hint_shizuku_no)
+                btnShizukuOpen.visibility = View.VISIBLE
+            }
+            !permGranted -> {
+                val rationale = ShizukuBlocker.shouldShowRationale()
+                chipShizuku.text = getString(R.string.status_need_perm)
+                chipShizuku.setTextColor(getColor(R.color.status_ng_fg))
+                chipShizuku.backgroundTintList = ColorStateList.valueOf(getColor(R.color.status_ng_bg))
+                setChipIcon(chipShizuku, R.drawable.ic_cancel, R.color.status_ng_fg)
+                hintShizuku.text = if (rationale) getString(R.string.hint_shizuku_rationale) else getString(R.string.hint_shizuku_perm)
+                // テスト用: インストール済みだが binder dead の場合は hint を dead に上書き
+                if (!Shizuku.pingBinder()) {
+                    hintShizuku.text = getString(R.string.hint_shizuku_dead)
+                    btnShizukuOpen.visibility = View.VISIBLE
+                } else {
+                    btnShizukuPerm.visibility = View.VISIBLE
+                }
+            }
+            blockEnabled && isSuspended -> {
+                chipShizuku.text = getString(R.string.status_blocked)
+                chipShizuku.setTextColor(getColor(R.color.status_ok_fg))
+                chipShizuku.backgroundTintList = ColorStateList.valueOf(getColor(R.color.status_ok_bg))
+                setChipIcon(chipShizuku, R.drawable.ic_check_circle, R.color.status_ok_fg)
+                hintShizuku.text = getString(R.string.hint_shizuku_active)
+                btnShizukuToggle.text = getString(R.string.btn_shizuku_disable)
+                btnShizukuToggle.visibility = View.VISIBLE
+                btnShizukuTemp.visibility = View.VISIBLE
+            }
+            blockEnabled && !isSuspended -> {
+                // 有効だが何らかの理由で suspend されていない (再起動直後など)
+                chipShizuku.text = getString(R.string.status_ready)
+                chipShizuku.setTextColor(getColor(R.color.status_ok_fg))
+                chipShizuku.backgroundTintList = ColorStateList.valueOf(getColor(R.color.status_ok_bg))
+                setChipIcon(chipShizuku, R.drawable.ic_check_circle, R.color.status_ok_fg)
+                hintShizuku.text = getString(R.string.hint_shizuku_ready) + "\n(現在は停止されていません — 再適用します)"
+                btnShizukuToggle.text = getString(R.string.btn_shizuku_disable)
+                btnShizukuToggle.visibility = View.VISIBLE
+                // 自動で再 suspend を試みる
+                ShizukuBlocker.suspendAllAsync(this) { updateStatusOnUi() }
+            }
+            else -> {
+                chipShizuku.text = getString(R.string.status_ready)
+                chipShizuku.setTextColor(getColor(R.color.status_ok_fg))
+                chipShizuku.backgroundTintList = ColorStateList.valueOf(getColor(R.color.status_ok_bg))
+                setChipIcon(chipShizuku, R.drawable.ic_check_circle, R.color.status_ok_fg)
+                hintShizuku.text = getString(R.string.hint_shizuku_ready)
+                btnShizukuToggle.text = getString(R.string.btn_shizuku_enable)
+                btnShizukuToggle.visibility = View.VISIBLE
+            }
+        }
+    }
+
+    private fun toggleShizukuBlock() {
+        val enabled = ShizukuBlocker.isBlockEnabled(this)
+        if (!enabled) {
+            // 有効化: suspend 実行
+            if (!ShizukuBlocker.isShizukuAvailable() || !ShizukuBlocker.isPermissionGranted()) {
+                Toast.makeText(this, "Shizukuの準備ができていません", Toast.LENGTH_SHORT).show()
+                return
+            }
+            ShizukuBlocker.setBlockEnabled(this, true)
+            Toast.makeText(this, "遮断を有効化中…", Toast.LENGTH_SHORT).show()
+            ShizukuBlocker.suspendAllAsync(this) { ok ->
+                Toast.makeText(this, if (ok) "楽天リンクを停止しました" else "停止に失敗しました", Toast.LENGTH_SHORT).show()
+                updateStatus()
+            }
+        } else {
+            // 無効化: unsuspend 実行
+            ShizukuBlocker.setBlockEnabled(this, false)
+            Toast.makeText(this, "遮断を解除中…", Toast.LENGTH_SHORT).show()
+            ShizukuBlocker.unsuspendAllAsync(this) { ok ->
+                Toast.makeText(this, if (ok) "楽天リンクを再開しました" else "再開に失敗しました", Toast.LENGTH_SHORT).show()
+                updateStatus()
+            }
+        }
+        updateStatus()
+    }
+
+    private fun tempAllowShizuku() {
+        if (!ShizukuBlocker.isShizukuAvailable() || !ShizukuBlocker.isPermissionGranted()) return
+        Toast.makeText(this, "10分間 一時的に許可します", Toast.LENGTH_SHORT).show()
+        ShizukuBlocker.unsuspendAllAsync(this) { ok ->
+            if (ok) {
+                Toast.makeText(this, "楽天リンクを再開しました。10分後に再停止します", Toast.LENGTH_LONG).show()
+                Handler(Looper.getMainLooper()).postDelayed({
+                    if (ShizukuBlocker.isBlockEnabled(this)) {
+                        ShizukuBlocker.suspendAllAsync(this) { updateStatusOnUi() }
+                    }
+                }, 10 * 60 * 1000L)
+            }
+            updateStatus()
+        }
+    }
+
+    private fun openShizukuApp() {
+        val pm = packageManager
+        val intent = pm.getLaunchIntentForPackage("moe.shizuku.privileged.api")
+            ?: pm.getLaunchIntentForPackage("rikka.shizuku")
+        if (intent != null) {
+            startActivity(intent)
+        } else {
+            try {
+                startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://shizuku.rikka.app/download/")))
+            } catch (_: Exception) { }
+        }
     }
 
     private fun setItemStatus(chip: TextView, button: Button, hint: TextView?, done: Boolean) {

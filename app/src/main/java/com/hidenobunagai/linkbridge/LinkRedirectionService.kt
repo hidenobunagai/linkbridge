@@ -47,7 +47,7 @@ class LinkRedirectionService : CallRedirectionService() {
             }
             try {
                 Log.i(TAG, "Shizuku block is enabled: unsuspending Rakuten Link for outgoing call")
-                ShizukuBlocker.unsuspendAllSync()
+                ShizukuBlocker.unsuspendAllSync(this)
                 Thread.sleep(350)
                 if (ShizukuBlocker.isAnySuspended(this)) {
                     Log.w(TAG, "Still suspended after unsuspend: fallback to normal call")

@@ -61,8 +61,17 @@ object ShizukuBlocker {
         context.packageManager.isPackageSuspended(pkg)
     } catch (_: Exception) { false }
 
+    fun isPackageInstalled(context: Context, pkg: String): Boolean = try {
+        context.packageManager.getPackageInfo(pkg, 0)
+        true
+    } catch (_: PackageManager.NameNotFoundException) { false }
+    catch (_: Exception) { false }
+
+    fun installedTargets(context: Context): List<String> =
+        TARGET_PACKAGES.filter { isPackageInstalled(context, it) }
+
     fun isAnySuspended(context: Context): Boolean =
-        TARGET_PACKAGES.any { isPackageSuspended(context, it) }
+        installedTargets(context).any { isPackageSuspended(context, it) }
 
     /**
      * Shizuku 経由で suspend。結果はコールバックで返す (非同期)。
@@ -89,24 +98,29 @@ object ShizukuBlocker {
             callback?.invoke(false); return
         }
         thread(name = "shizuku-unsuspend") {
-            val ok = unsuspendAllSync()
+            val ok = unsuspendAllSync(context)
             Handler(Looper.getMainLooper()).post { callback?.invoke(ok) }
         }
     }
 
     /** 同期版: 呼び出し元がバックグラウンドスレッドであること */
     fun suspendAllSync(context: Context): Boolean {
-        return setSuspendedSync(suspend = true)
+        return setSuspendedSync(context, suspend = true)
     }
 
-    fun unsuspendAllSync(): Boolean {
-        return setSuspendedSync(suspend = false)
+    fun unsuspendAllSync(context: Context): Boolean {
+        return setSuspendedSync(context, suspend = false)
     }
 
-    private fun setSuspendedSync(suspend: Boolean): Boolean {
+    private fun setSuspendedSync(context: Context, suspend: Boolean): Boolean {
         val action = if (suspend) "suspend" else "unsuspend"
+        val targets = installedTargets(context)
+        if (targets.isEmpty()) {
+            Log.w(TAG, "no installed target for $action")
+            return false
+        }
         var allOk = true
-        for (pkg in TARGET_PACKAGES) {
+        for (pkg in targets) {
             val ok = execViaShell(action, pkg)
             if (!ok) allOk = false
         }
@@ -137,7 +151,7 @@ object ShizukuBlocker {
         if (!isBlockEnabled(context)) return
         if (!isShizukuAvailable() || !isPermissionGranted()) return
         try {
-            unsuspendAllSync()
+            unsuspendAllSync(context)
             // suspend フラグの反映にわずかにラグがあるため短時間待機
             Thread.sleep(400)
         } catch (e: Exception) {

@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LinkBridge — 楽天リンクへの通話転送</title>
+<meta name="description" content="ストックダイヤラーからの発信を楽天リンクに転送する個人用 Android アプリ LinkBridge のダウンロードページです。">
+<style>
+  :root {
+    color-scheme: light dark;
+    --bg: #f5f6f7;
+    --fg: #1a1a1a;
+    --accent: #bf0000;      /* 楽天カラーの赤に寄せたアクセント */
+    --accent-fg: #ffffff;
+    --card: #ffffff;
+    --border: #d9dce0;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #12141a;
+      --fg: #e8eaed;
+      --accent: #ff5a5a;
+      --accent-fg: #1a0000;
+      --card: #1c1f27;
+      --border: #343945;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, "Hiragino Sans", "Noto Sans JP", "Yu Gothic", sans-serif;
+    background: var(--bg);
+    color: var(--fg);
+    line-height: 1.6;
+  }
+  main { max-width: 640px; margin: 0 auto; padding: 48px 20px 64px; }
+  header { text-align: center; margin-bottom: 32px; }
+  h1 { font-size: 2rem; margin: 0 0 8px; }
+  header p { margin: 0; color: inherit; opacity: .85; }
+  .download-btn {
+    display: block;
+    margin: 32px auto;
+    padding: 18px 24px;
+    max-width: 340px;
+    width: 100%;
+    text-align: center;
+    background: var(--accent);
+    color: var(--accent-fg);
+    font-size: 1.15rem;
+    font-weight: 700;
+    border-radius: 12px;
+    text-decoration: none;
+  }
+  .download-btn:hover { filter: brightness(1.1); }
+  .download-btn:focus-visible { outline: 3px solid var(--fg); outline-offset: 2px; }
+  .meta { text-align: center; font-size: .9rem; opacity: .8; margin: 0 0 40px; }
+  section {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px 24px;
+    margin-bottom: 20px;
+  }
+  h2 { font-size: 1.1rem; margin: 0 0 12px; }
+  ol { margin: 0; padding-left: 1.4em; }
+  li { margin-bottom: 8px; }
+  code {
+    background: var(--border);
+    border-radius: 4px;
+    padding: 1px 6px;
+    font-size: .9em;
+  }
+  footer { text-align: center; font-size: .85rem; opacity: .7; margin-top: 40px; }
+  footer a { color: var(--fg); }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <h1>LinkBridge</h1>
+    <p>ストックダイヤラーからの発信を楽天リンクに転送する</p>
+    <p>個人用 Android アプリ</p>
+  </header>
+
+  <a class="download-btn" href="https://github.com/hidenobunagai/linkbridge/releases/latest/download/app-release.apk">
+    最新版をダウンロード
+  </a>
+  <p class="meta">バージョン 1.1-shizuku（APK / 約 11MB）</p>
+
+  <section>
+    <h2>できること</h2>
+    <p>「デフォルト通話転送アプリ」に設定すると、ダイヤラーからの発信を楽天リンクのダイヤラーへ引き継ぎます。緊急通報やショートコード等の特別な番号は通常発信のまま通し、実際に発信された通話だけを通話履歴に残します。</p>
+  </section>
+
+  <section>
+    <h2>インストール方法</h2>
+    <ol>
+      <li>上のボタンで APK をダウンロードし、通知またはファイルアプリから開く。初回は「提供元不明のアプリ」のインストール許可が必要です。</li>
+      <li>アプリを開き「デフォルト通話転送アプリに設定」から LinkBridge を選択。</li>
+      <li>次を許可します: 通話履歴への書き込み（<code>WRITE_CALL_LOG</code>）、画面の上に表示（<code>SYSTEM_ALERT_WINDOW</code>）、通知へのアクセス。一部の権限は設定で付与できない場合があり、その場合は <code>adb</code> から付与してください。</li>
+    </ol>
+    <p>詳しい手順は <a href="https://github.com/hidenobunagai/linkbridge/blob/main/README.md" style="color:var(--accent)">README</a> を参照してください。</p>
+  </section>
+
+  <footer>
+    <a href="https://github.com/hidenobunagai/linkbridge">GitHub リポジトリ</a> ・ 個人用アプリです。動作確認は自己責任でお願いします。
+  </footer>
+</main>
+</body>
+</html>

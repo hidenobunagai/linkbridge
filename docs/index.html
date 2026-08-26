@@ -3,18 +3,19 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>LinkBridge — 楽天リンクへの通話転送</title>
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' rx='6' fill='%23e8333f'/%3E%3Cpath d='M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z' fill='white'/%3E%3C/svg%3E">
-<meta name="description" content="ストックダイヤラーからの発信を楽天リンクに転送する個人用 Android アプリ LinkBridge のダウンロードページです。">
+<title>LinkBridge — ダイヤラーからそのまま楽天リンクで通話</title>
+<meta name="description" content="ストックダイヤラーからの発信を楽天リンクに転送する Android アプリ LinkBridge の紹介・ダウンロードページです。">
+<link rel="icon" href="images/icon.svg" type="image/svg+xml">
 <style>
   :root {
     color-scheme: dark;
     --bg-0: #0d1022;
-    --bg-1: #1b1236;
+    --bg-1: #1c143d;
     --fg: #eceef5;
     --muted: #a3a9bd;
-    --accent: #ff4d5a;      /* 楽天カラーの赤 */
-    --accent-2: #ff9d33;    /* グラデーションの暖色側 */
+    --accent: #c4b5fd;      /* ライトパープル(アクセント文字・アイコン) */
+    --btn-0: #5e35b1;       /* ボタン(実アイコンの濃い側グラデ) */
+    --btn-1: #4a148c;
     --card: rgba(255, 255, 255, .055);
     --border: rgba(255, 255, 255, .12);
   }
@@ -27,34 +28,31 @@
     color: var(--fg);
     line-height: 1.65;
     background:
-      radial-gradient(900px 480px at 15% -10%, rgba(255, 77, 90, .22), transparent 60%),
-      radial-gradient(900px 520px at 90% 110%, rgba(255, 157, 51, .16), transparent 60%),
+      radial-gradient(900px 480px at 15% -10%, rgba(142, 108, 255, .20), transparent 60%),
+      radial-gradient(900px 520px at 90% 110%, rgba(74, 20, 140, .30), transparent 60%),
       linear-gradient(160deg, var(--bg-0), var(--bg-1));
     background-attachment: fixed;
   }
-  main { max-width: 720px; margin: 0 auto; padding: 72px 20px 72px; }
+  main { max-width: 720px; margin: 0 auto; padding: 64px 20px 72px; }
 
   /* Hero */
   .hero { text-align: center; margin-bottom: 40px; }
-  .logo {
-    display: grid;
-    place-items: center;
-    width: 72px; height: 72px;
+  .hero .logo {
+    width: 84px; height: 84px;
     margin: 0 auto 20px;
-    background: linear-gradient(135deg, var(--accent), var(--accent-2));
-    border-radius: 20px;
-    box-shadow: 0 14px 34px rgba(255, 77, 90, .35);
+    display: block;
+    border-radius: 22%;
+    box-shadow: 0 16px 40px rgba(74, 20, 140, .45);
   }
-  .logo svg { width: 38px; height: 38px; fill: #fff; }
   .badge {
     display: inline-block;
     padding: 5px 14px;
     margin-bottom: 16px;
-    font-size: .8rem;
+    font-size: .78rem;
     letter-spacing: .06em;
-    color: #ffd9b3;
-    background: rgba(255, 157, 51, .14);
-    border: 1px solid rgba(255, 157, 51, .35);
+    color: #d5c8ff;
+    background: rgba(142, 108, 255, .14);
+    border: 1px solid rgba(142, 108, 255, .4);
     border-radius: 999px;
   }
   h1 {
@@ -62,13 +60,13 @@
     font-size: clamp(2.2rem, 7vw, 3.2rem);
     line-height: 1.15;
     letter-spacing: -.02em;
-    background: linear-gradient(90deg, var(--fg), #ffd0cc 60%, #ffb066);
+    background: linear-gradient(90deg, var(--fg), #d9ccff 55%, #b39cff);
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
   }
-  .hero p { margin: 0; color: var(--muted); font-size: 1.05rem; }
-  .hero p strong { color: var(--fg); }
+  .tagline { margin: 0 0 6px; font-size: 1.15rem; font-weight: 600; }
+  .hero .sub { margin: 0; color: var(--muted); font-size: .98rem; }
 
   /* Download button */
   .download-btn {
@@ -76,7 +74,7 @@
     align-items: center;
     justify-content: center;
     gap: 10px;
-    margin: 34px auto;
+    margin: 30px auto;
     padding: 18px 28px;
     max-width: 360px;
     width: 100%;
@@ -85,25 +83,30 @@
     letter-spacing: .02em;
     color: #fff;
     text-decoration: none;
-    background: linear-gradient(135deg, #c2001a, #e8333f);
+    background: linear-gradient(135deg, var(--btn-0), var(--btn-1));
     border-radius: 14px;
-    box-shadow: 0 12px 30px rgba(194, 0, 26, .4);
+    box-shadow: 0 12px 30px rgba(74, 20, 140, .45);
     transition: transform .18s ease, box-shadow .18s ease, filter .18s ease;
   }
-  .download-btn:hover { transform: translateY(-2px); filter: brightness(1.07); box-shadow: 0 18px 40px rgba(194, 0, 26, .5); }
+  .download-btn:hover { transform: translateY(-2px); filter: brightness(1.08); box-shadow: 0 18px 42px rgba(74, 20, 140, .55); }
   .download-btn:active { transform: translateY(0); }
   .download-btn:focus-visible { outline: 3px solid #fff; outline-offset: 3px; }
   .download-btn svg { width: 20px; height: 20px; fill: #fff; }
   .meta { text-align: center; color: var(--muted); font-size: .9rem; margin: -12px 0 48px; }
-  .meta code { color: #ffd9b3; }
+  .meta code { color: #d5c8ff; }
+
+  /* Section scaffold */
+  .section {
+    margin-bottom: 24px;
+  }
+  .section > h2 {
+    margin: 0 0 14px;
+    font-size: 1.25rem;
+  }
+  .section > h2 span { color: var(--accent); }
 
   /* Feature cards */
-  .feature-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 14px;
-    margin-bottom: 22px;
-  }
+  .feature-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
   @media (max-width: 620px) { .feature-grid { grid-template-columns: 1fr; } }
   .feature {
     padding: 20px 18px;
@@ -113,36 +116,86 @@
     backdrop-filter: blur(8px);
   }
   .feature svg { width: 26px; height: 26px; fill: var(--accent); margin-bottom: 10px; }
-  .feature h2 { margin: 0 0 6px; font-size: 1rem; }
+  .feature h3 { margin: 0 0 6px; font-size: 1rem; }
   .feature p { margin: 0; font-size: .88rem; color: var(--muted); }
 
-  /* Install */
-  .install {
+  /* How it works */
+  .how { text-align: center; }
+  .how figure { margin: 0 0 16px; }
+  .how img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 14px;
+    border: 1px solid var(--border);
+    background: var(--card);
+  }
+  .how figcaption { color: var(--muted); font-size: .82rem; margin-top: 8px; }
+  .how ol { display: inline-block; text-align: left; margin: 0; padding-left: 1.4em; }
+  .how li { margin-bottom: 6px; font-size: .94rem; color: var(--fg); }
+  .how li::marker { color: var(--accent); font-weight: 700; }
+
+  /* Steps / install */
+  .steps {
     padding: 22px 24px;
     background: var(--card);
     border: 1px solid var(--border);
     border-radius: 14px;
     backdrop-filter: blur(8px);
   }
-  .install h2 { margin: 0 0 12px; font-size: 1.05rem; }
-  ol { margin: 0; padding-left: 1.4em; }
-  li { margin-bottom: 8px; font-size: .95rem; }
-  li::marker { color: var(--accent); font-weight: 700; }
+  .steps ol { margin: 0; padding-left: 0; list-style: none; counter-reset: step; }
+  .steps li {
+    counter-increment: step;
+    position: relative;
+    padding: 0 0 16px 44px;
+    font-size: .95rem;
+  }
+  .steps li:last-child { padding-bottom: 0; }
+  .steps li::before {
+    content: counter(step);
+    position: absolute; left: 0; top: 0;
+    width: 28px; height: 28px;
+    display: grid; place-items: center;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--btn-0), var(--btn-1));
+    color: #fff; font-weight: 700; font-size: .85rem;
+  }
+  .steps ul { margin: 6px 0 0; padding-left: 1.3em; }
+  .steps li > p { margin: 0; }
   code {
     background: rgba(255, 255, 255, .12);
     border-radius: 4px;
     padding: 1px 6px;
     font-size: .9em;
   }
-  .install a { color: var(--accent); }
+  .steps a, .optional a, .faq a, footer a { color: var(--accent); }
+
+  /* Optional (Shizuku) */
+  .optional { padding: 22px 24px; background: var(--card); border: 1px solid var(--border); border-radius: 14px; }
+  .optional .opt-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; align-items: center; }
+  @media (max-width: 620px) { .optional .opt-grid { grid-template-columns: 1fr; } }
+  .optional img { max-width: 100%; height: auto; border-radius: 12px; border: 1px solid var(--border); }
+  .optional h3 { margin: 0 0 8px; font-size: 1.05rem; }
+  .optional p { margin: 0 0 10px; font-size: .92rem; color: var(--muted); }
+
+  /* FAQ */
+  details {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px 18px;
+    margin-bottom: 10px;
+  }
+  details summary { cursor: pointer; font-weight: 600; font-size: .97rem; }
+  details summary::marker { color: var(--accent); }
+  details p { margin: 10px 0 0; font-size: .92rem; color: var(--muted); }
 
   footer { text-align: center; color: var(--muted); font-size: .83rem; margin-top: 40px; }
-  footer a { color: var(--muted); text-decoration: underline; text-underline-offset: 3px; }
+  footer a { text-decoration: underline; text-underline-offset: 3px; }
 
   /* Entrance */
-  .reveal { animation: rise .7s ease both; }
-  .reveal:nth-child(2) { animation-delay: .08s; }
-  .reveal:nth-child(3) { animation-delay: .16s; }
+  .reveal { animation: rise .6s ease both; }
+  .reveal:nth-child(2) { animation-delay: .06s; }
+  .reveal:nth-child(3) { animation-delay: .12s; }
   @keyframes rise {
     from { opacity: 0; transform: translateY(14px); }
     to   { opacity: 1; transform: none; }
@@ -155,47 +208,110 @@
 <body>
 <main>
   <header class="hero reveal">
-    <div class="logo" aria-hidden="true">
-      <svg viewBox="0 0 24 24"><path d="M15.5 1h-8A2.5 2.5 0 0 0 5 3.5v17A2.5 2.5 0 0 0 7.5 23h8a2.5 2.5 0 0 0 2.5-2.5v-17A2.5 2.5 0 0 0 15.5 1zm-4 21c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm4.5-4H7V4h9v14z"/></svg>
-    </div>
+    <img class="logo" src="images/icon.svg" alt="LinkBridge アプリアイコン" width="84" height="84">
     <span class="badge">ANDROID アプリ</span>
     <h1>LinkBridge</h1>
-    <p>ストックダイヤラーからの発信を <strong>楽天リンク</strong> に転送する</p>
-    <p>個人用アプリ</p>
+    <p class="tagline">ダイヤラーからかけた電話を、そのまま楽天リンクに。</p>
+    <p class="sub">番号の入力のしかたは普段どおり。発信だけが自動で楽天リンクになります。</p>
   </header>
 
   <a class="download-btn reveal" href="https://github.com/hidenobunagai/linkbridge/releases/latest/download/app-release.apk">
     <svg viewBox="0 0 24 24"><path d="M5 20h14v-2H5v2zM19 9h-4V3H9v6H5l7 7 7-7z"/></svg>
     最新版をダウンロード
   </a>
-  <p class="meta reveal">バージョン <code>1.1-shizuku</code> ・ APK（約 11MB）</p>
+  <p class="meta reveal">バージョン <code>1.1-shizuku</code> ・ APK（約 11MB）・ 無料</p>
 
-  <div class="feature-grid reveal">
-    <section class="feature">
+  <section class="section feature-grid reveal">
+    <div class="feature">
       <svg viewBox="0 0 24 24"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg>
-      <h2>ワンタップ転送</h2>
-      <p>ダイヤラーからの発信を、そのまま楽天リンクのダイヤラーへ引き継ぎます。</p>
-    </section>
-    <section class="feature">
+      <h3>番号の入力は普段どおり</h3>
+      <p>いつもの電話アプリから入力するだけ。発信先はそのままで、通話だけ楽天リンクに引き継がれます。</p>
+    </div>
+    <div class="feature">
       <svg viewBox="0 0 24 24"><path d="M12 2 4 5v6c0 5.55 3.84 10.74 8 12 4.16-1.26 8-6.45 8-12V5l-8-3zm-2 15-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z"/></svg>
-      <h2>賢い番号判定</h2>
-      <p>ショートコードや緊急通報など特別な番号だけを通常発信のまま通します。</p>
-    </section>
-    <section class="feature">
+      <h3>緊急通報・短縮番号は安全に</h3>
+      <p>110 / 119 はシステムが常に除外。ショートコードや特番などは通常発信のまま通します。</p>
+    </div>
+    <div class="feature">
       <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
-      <h2>履歴も自動補完</h2>
-      <p>実際に発信した通話だけを通話履歴に残します。発信していない誤検知なし。</p>
-    </section>
-  </div>
+      <h3>通話履歴も自動で</h3>
+      <p>実際に発信できた通話だけを履歴に自動で記録。発信していないのに残る誤記録はありません。</p>
+    </div>
+  </section>
 
-  <section class="install reveal">
-    <h2>インストール方法</h2>
+  <section class="section how reveal">
+    <h2><span>しくみ</span> — どこを通るか</h2>
+    <figure>
+      <img src="images/linkbridge_summary.png" alt="電話をかけると LinkBridge が楽天リンクへ引き継ぐ流れの図">
+      <figcaption>LinkBridge のしくみ（全体の流れ）</figcaption>
+    </figure>
     <ol>
-      <li>上のボタンで APK をダウンロードし、通知またはファイルアプリから開く。初回は「提供元不明のアプリ」のインストール許可が必要です。</li>
-      <li>アプリを開き「デフォルト通話転送アプリに設定」から LinkBridge を選択。</li>
-      <li>通話履歴の書き込み・画面の上に表示・通知アクセスの権限を許可します。一部の端末では設定画面で付与できない場合があるため、その際は <code>adb</code> から付与してください。</li>
+      <li>電話をかけると「デフォルト通話転送アプリ」の LinkBridge が発信をうけとります</li>
+      <li>通常の電話番号は楽天リンクのダイヤラーを開いてそのまま発信</li>
+      <li>実際に発信された通話だけが通話履歴に記録されます</li>
     </ol>
-    <p style="font-size:.9rem;color:var(--muted);margin:12px 0 0;">詳しい手順は <a href="https://github.com/hidenobunagai/linkbridge/blob/main/README.md">README</a> を参照してください。</p>
+  </section>
+
+  <section class="section reveal">
+    <h2><span>はじめかた</span> — 約 3 分で設定完了</h2>
+    <div class="steps">
+      <ol>
+        <li><p><strong>APK をインストール</strong> — 上のボタンからダウンロードし、通知またはファイルアプリから開きます。初回は「提供元不明のアプリ」の許可が必要です。</p></li>
+        <li><p><strong>転送アプリに設定</strong> — アプリを開いて「デフォルト通話転送アプリに設定」→ 端末の一覧で LinkBridge を選択します。</p></li>
+        <li><p><strong>必要な権限を許可</strong></p>
+          <ul>
+            <li>通話履歴への保存 — かけた通話を履歴に残すため</li>
+            <li>画面の上に表示 — 楽天リンクを起動するため(バックグラウンド起動の制限を回避)</li>
+            <li>通知へのアクセス — 通話の開始・終了を検知するため</li>
+          </ul>
+          <p style="margin-top:8px;color:var(--muted);font-size:.88rem;">機種によっては設定画面から与えられない権限があり、その場合は <code>adb</code> コマンドでの付与が必要です(手順は <a href="https://github.com/hidenobunagai/linkbridge/blob/main/README.md">README</a> にあります)。</p>
+        </li>
+        <li><p><strong>準備完了</strong> — 以後、いつもの電話アプリから番号をかけるだけ。普通に電話をかける感覚のままです。</p></li>
+      </ol>
+    </div>
+  </section>
+
+  <section class="section reveal">
+    <div class="optional">
+      <span class="badge" style="margin-bottom:10px;">上級者向け・任意</span>
+      <h3>着信の完全遮断（Shizuku）</h3>
+      <div class="opt-grid">
+        <div>
+          <p>楽天リンクの着信が届かない・バイブだけ鳴って取れない、といった<b>着信漏れ</b>に困る方向けのオプションです。Shizuku を使って楽天リンクを一時停止し、着信を標準の電話アプリに完全にフォールバックさせます。</p>
+          <p>VPN を使わない方式のため、<b>Tailscale などの VPN と共存</b>できます。</p>
+          <p>設定は Shizuku の起動 → アプリ内の「着信の完全遮断 (Shizuku)」カードで有効化です。遮断中は楽天リンクを開けないため、メッセージ確認時は一時的に許可(10分)してください。詳細は <a href="https://github.com/hidenobunagai/linkbridge/blob/main/README.md">README</a> 参照。</p>
+        </div>
+        <img src="images/shizuku.png" alt="Shizuku による着信完全遮断の仕組みの図">
+      </div>
+    </div>
+  </section>
+
+  <section class="section reveal">
+    <h2><span>よくある質問</span></h2>
+    <details>
+      <summary>楽天リンクって何ですか?</summary>
+      <p>楽天モバイルの公式通話アプリです。電話を「楽天リンク」経由でかけることで、契約のルール(無料通話範囲やデータ通信での通話など)に沿って通話できるようになります。</p>
+    </details>
+    <details>
+      <summary>料金はかかりますか?</summary>
+      <p>このアプリ自体は無料で使えます(個人作のアプリです)。通話料金は楽天モバイルのご契約内容に従います。</p>
+    </details>
+    <details>
+      <summary>ふつうの電話アプリに戻せますか?</summary>
+      <p>はい。端末の設定アプリ →「デフォルト通話転送アプリ」で LinkBridge 以外を選べば、動作を止められます。アンインストールでも元に戻ります。</p>
+    </details>
+    <details>
+      <summary>緊急通報やショートコードは大丈夫ですか?</summary>
+      <p>110 / 119 / 118 などはシステムが転送対象から常に除外しています。またショートコード・特番・ナビダイヤルなどは通常のまま発信されるので影響しません。</p>
+    </details>
+    <details>
+      <summary>発信番号以外の情報を読み取りますか?</summary>
+      <p>読み取るのは発信先の番号と、通話の開始・終了の通知だけです。連絡先・通話内容・位置情報などは扱いません。必要な権限も動作に必要な範囲のみです。</p>
+    </details>
+    <details>
+      <summary>ビデオ通話や注意点は?</summary>
+      <p>現バージョンではビデオ通話の区別ができず、音声通話として楽天リンクに転送されます。そのほかの既知の注意点は <a href="https://github.com/hidenobunagai/linkbridge/blob/main/README.md">README</a> にまとめています。</p>
+    </details>
   </section>
 
   <footer>

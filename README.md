@@ -62,6 +62,8 @@ Galaxy のディープスリープや One UI の「バックグラウンドデ�
 
 本アプリは **Shizuku (adb / ワイヤレスデバッグ) 経由で楽天リンクを `suspend` する方式**を追加しました。VPNを占有しないため Tailscale 使用中でも着信を標準電話アプリへ完全フォールバックできます。
 
+![着信の完全遮断 (Shizuku)](shizuku.png)
+
 ### 仕組み
 
 - **遮断中**: `cmd package suspend jp.co.rakuten.mobile.rcs` で楽天リンクを停止。着信はキャリア網(VoLTE)で標準電話アプリに届く

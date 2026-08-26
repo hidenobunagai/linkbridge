@@ -11,3 +11,6 @@ keystore.properties
 
 # 開発用メモ (公開リポジトリには含めない)
 AGENTS.md
+
+# MCP ツール作業ディレクトリ
+.playwright-mcp/

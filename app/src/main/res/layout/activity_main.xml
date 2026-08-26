@@ -351,6 +351,20 @@
                         android:textStyle="bold" />
 
                     <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="8dp"
+                        android:background="@drawable/bg_chip"
+                        android:backgroundTint="?attr/colorSurfaceVariant"
+                        android:gravity="center_vertical"
+                        android:minHeight="28dp"
+                        android:paddingStart="10dp"
+                        android:paddingEnd="10dp"
+                        android:text="@string/badge_optional"
+                        android:textAppearance="?attr/textAppearanceLabelSmall"
+                        android:textStyle="bold" />
+
+                    <TextView
                         android:id="@+id/status_shizuku"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -461,6 +475,20 @@
                         android:layout_weight="1"
                         android:text="@string/card_a11y_title"
                         android:textAppearance="?attr/textAppearanceTitleSmall"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="8dp"
+                        android:background="@drawable/bg_chip"
+                        android:backgroundTint="?attr/colorSurfaceVariant"
+                        android:gravity="center_vertical"
+                        android:minHeight="28dp"
+                        android:paddingStart="10dp"
+                        android:paddingEnd="10dp"
+                        android:text="@string/badge_optional"
+                        android:textAppearance="?attr/textAppearanceLabelSmall"
                         android:textStyle="bold" />
 
                     <TextView

@@ -22,6 +22,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
+import com.google.android.material.materialswitch.MaterialSwitch
 import com.google.android.material.progressindicator.LinearProgressIndicator
 import rikka.shizuku.Shizuku
 
@@ -50,6 +51,7 @@ class MainActivity : ComponentActivity() {
     private lateinit var chipA11y: TextView
     private lateinit var hintA11y: TextView
     private lateinit var btnA11y: Button
+    private lateinit var switchConfirm: MaterialSwitch
 
     private val roleLauncher: ActivityResultLauncher<Intent> =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
@@ -141,6 +143,12 @@ class MainActivity : ComponentActivity() {
         btnShizukuOpen.setOnClickListener { openShizukuApp() }
         btnA11y.setOnClickListener {
             a11yLauncher.launch(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
+        }
+
+        switchConfirm = findViewById(R.id.switch_confirm)
+        switchConfirm.isChecked = LinkRedirectionService.isConfirmEachCallEnabled(this)
+        switchConfirm.setOnCheckedChangeListener { _, checked ->
+            LinkRedirectionService.setConfirmEachCallEnabled(this, checked)
         }
 
         try {

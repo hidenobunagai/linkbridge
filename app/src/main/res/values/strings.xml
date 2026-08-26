@@ -56,4 +56,13 @@
     <string name="hint_a11y_on">有効: 閉じたら1.5秒後に再停止します。</string>
     <string name="hint_a11y_off">無効: 発信キャンセル時に開きっぱなしになります。ONにすると自動で戻ります。</string>
     <string name="btn_a11y">ユーザー補助設定を開く</string>
+
+    <!-- 発信時確認 -->
+    <string name="card_confirm_title">発信時に毎回確認</string>
+    <string name="card_confirm_desc">発信するたびに「楽天リンク / 通常電話」を選べるようにします。OFF なら従来どおり常に楽天リンクへ転送します。</string>
+    <string name="choose_title">発信方法を選択</string>
+    <string name="choose_number">発信先: %1$s</string>
+    <string name="btn_choose_rakuten">楽天リンクで発信</string>
+    <string name="btn_choose_normal">通常の電話で発信</string>
+    <string name="choose_hint">何も選択しない場合、15秒後に通常の電話で発信します。</string>
 </resources>

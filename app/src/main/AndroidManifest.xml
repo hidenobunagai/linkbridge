@@ -38,6 +38,13 @@
             </intent-filter>
         </activity>
 
+        <!-- 発信方法の選択ダイアログ (通話転送時にサービスから起動される) -->
+        <activity
+            android:name=".ChooseCallAppActivity"
+            android:excludeFromRecents="true"
+            android:exported="false"
+            android:theme="@style/Theme.LinkBridge.Dialog" />
+
         <service
             android:name=".LinkRedirectionService"
             android:exported="true"

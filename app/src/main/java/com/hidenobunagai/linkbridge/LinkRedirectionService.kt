@@ -17,9 +17,16 @@ class LinkRedirectionService : CallRedirectionService() {
         val number = phoneNumberForRedirect(handle.scheme, handle.schemeSpecificPart)
             ?: run {
                 // ショートコード (*123# など)・USSD・SIP 等は通常発信のまま通す
+                Log.i(TAG, "onPlaceCall: not redirectable, placing unmodified")
                 placeCallUnmodified()
                 return
             }
+
+        Log.i(
+            TAG,
+            "onPlaceCall: number=$number thread=${Thread.currentThread().name} " +
+                "interactive=$allowInteractiveResponse confirm=${isConfirmEachCallEnabled(this)}"
+        )
 
         // Rakuten Link は "+" 付き番号を扱えないため、国内は 0 始まり、海外は 010 形式に変換する
         val dialNumber = toDialableNumber(number)
@@ -86,27 +93,23 @@ class LinkRedirectionService : CallRedirectionService() {
         }
     }
 
-    /** 選択ダイアログを表示し、選択結果に応じて転送 or 通常発信を後から実行する */
+    /** 選択オーバーレイを表示し、選択結果に応じて転送 or 通常発信を後から実行する */
     private fun showChooseDialog(dialNumber: String, intent: Intent) {
         // 既に別の発信の選択待ちなら重ねず従来どおり転送 (2 重発信の保険)
         if (pendingChoice != null) {
+            Log.i(TAG, "showChooseDialog: already pending, redirecting directly")
             redirectToRakuten(dialNumber, intent)
             return
         }
+        Log.i(TAG, "showChooseDialog: showing overlay for $dialNumber")
         pendingChoice = { toRakuten ->
             pendingChoice = null
+            Log.i(TAG, "choose result: toRakuten=$toRakuten")
             if (toRakuten) redirectToRakuten(dialNumber, intent) else placeCallUnmodified()
         }
-        try {
-            startActivity(
-                Intent(this, ChooseCallAppActivity::class.java)
-                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                    .putExtra(ChooseCallAppActivity.EXTRA_NUMBER, dialNumber)
-            )
-        } catch (e: Exception) {
-            Log.e(TAG, "Failed to start choose dialog", e)
-            pendingChoice = null
-            placeCallUnmodified()
+        ChooseCallAppOverlay.show(this, dialNumber) { toRakuten ->
+            // タイムアウト等で選択待ちが解除されていなければ選択を実行する
+            pendingChoice?.invoke(toRakuten)
         }
     }
 

@@ -7,99 +7,194 @@
 <meta name="description" content="ストックダイヤラーからの発信を楽天リンクに転送する個人用 Android アプリ LinkBridge のダウンロードページです。">
 <style>
   :root {
-    color-scheme: light dark;
-    --bg: #f5f6f7;
-    --fg: #1a1a1a;
-    --accent: #bf0000;      /* 楽天カラーの赤に寄せたアクセント */
-    --accent-fg: #ffffff;
-    --card: #ffffff;
-    --border: #d9dce0;
-  }
-  @media (prefers-color-scheme: dark) {
-    :root {
-      --bg: #12141a;
-      --fg: #e8eaed;
-      --accent: #ff5a5a;
-      --accent-fg: #1a0000;
-      --card: #1c1f27;
-      --border: #343945;
-    }
+    color-scheme: dark;
+    --bg-0: #0d1022;
+    --bg-1: #1b1236;
+    --fg: #eceef5;
+    --muted: #a3a9bd;
+    --accent: #ff4d5a;      /* 楽天カラーの赤 */
+    --accent-2: #ff9d33;    /* グラデーションの暖色側 */
+    --card: rgba(255, 255, 255, .055);
+    --border: rgba(255, 255, 255, .12);
   }
   * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
   body {
     margin: 0;
+    min-height: 100vh;
     font-family: -apple-system, "Hiragino Sans", "Noto Sans JP", "Yu Gothic", sans-serif;
-    background: var(--bg);
     color: var(--fg);
-    line-height: 1.6;
+    line-height: 1.65;
+    background:
+      radial-gradient(900px 480px at 15% -10%, rgba(255, 77, 90, .22), transparent 60%),
+      radial-gradient(900px 520px at 90% 110%, rgba(255, 157, 51, .16), transparent 60%),
+      linear-gradient(160deg, var(--bg-0), var(--bg-1));
+    background-attachment: fixed;
   }
-  main { max-width: 640px; margin: 0 auto; padding: 48px 20px 64px; }
-  header { text-align: center; margin-bottom: 32px; }
-  h1 { font-size: 2rem; margin: 0 0 8px; }
-  header p { margin: 0; color: inherit; opacity: .85; }
+  main { max-width: 720px; margin: 0 auto; padding: 72px 20px 72px; }
+
+  /* Hero */
+  .hero { text-align: center; margin-bottom: 40px; }
+  .logo {
+    display: grid;
+    place-items: center;
+    width: 72px; height: 72px;
+    margin: 0 auto 20px;
+    background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    border-radius: 20px;
+    box-shadow: 0 14px 34px rgba(255, 77, 90, .35);
+  }
+  .logo svg { width: 38px; height: 38px; fill: #fff; }
+  .badge {
+    display: inline-block;
+    padding: 5px 14px;
+    margin-bottom: 16px;
+    font-size: .8rem;
+    letter-spacing: .06em;
+    color: #ffd9b3;
+    background: rgba(255, 157, 51, .14);
+    border: 1px solid rgba(255, 157, 51, .35);
+    border-radius: 999px;
+  }
+  h1 {
+    margin: 0 0 10px;
+    font-size: clamp(2.2rem, 7vw, 3.2rem);
+    line-height: 1.15;
+    letter-spacing: -.02em;
+    background: linear-gradient(90deg, var(--fg), #ffd0cc 60%, #ffb066);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .hero p { margin: 0; color: var(--muted); font-size: 1.05rem; }
+  .hero p strong { color: var(--fg); }
+
+  /* Download button */
   .download-btn {
-    display: block;
-    margin: 32px auto;
-    padding: 18px 24px;
-    max-width: 340px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin: 34px auto;
+    padding: 18px 28px;
+    max-width: 360px;
     width: 100%;
-    text-align: center;
-    background: var(--accent);
-    color: var(--accent-fg);
-    font-size: 1.15rem;
+    font-size: 1.1rem;
     font-weight: 700;
-    border-radius: 12px;
+    letter-spacing: .02em;
+    color: #fff;
     text-decoration: none;
+    background: linear-gradient(135deg, #c2001a, #e8333f);
+    border-radius: 14px;
+    box-shadow: 0 12px 30px rgba(194, 0, 26, .4);
+    transition: transform .18s ease, box-shadow .18s ease, filter .18s ease;
   }
-  .download-btn:hover { filter: brightness(1.1); }
-  .download-btn:focus-visible { outline: 3px solid var(--fg); outline-offset: 2px; }
-  .meta { text-align: center; font-size: .9rem; opacity: .8; margin: 0 0 40px; }
-  section {
+  .download-btn:hover { transform: translateY(-2px); filter: brightness(1.07); box-shadow: 0 18px 40px rgba(194, 0, 26, .5); }
+  .download-btn:active { transform: translateY(0); }
+  .download-btn:focus-visible { outline: 3px solid #fff; outline-offset: 3px; }
+  .download-btn svg { width: 20px; height: 20px; fill: #fff; }
+  .meta { text-align: center; color: var(--muted); font-size: .9rem; margin: -12px 0 48px; }
+  .meta code { color: #ffd9b3; }
+
+  /* Feature cards */
+  .feature-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+    margin-bottom: 22px;
+  }
+  @media (max-width: 620px) { .feature-grid { grid-template-columns: 1fr; } }
+  .feature {
+    padding: 20px 18px;
     background: var(--card);
     border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 20px 24px;
-    margin-bottom: 20px;
+    border-radius: 14px;
+    backdrop-filter: blur(8px);
   }
-  h2 { font-size: 1.1rem; margin: 0 0 12px; }
+  .feature svg { width: 26px; height: 26px; fill: var(--accent); margin-bottom: 10px; }
+  .feature h2 { margin: 0 0 6px; font-size: 1rem; }
+  .feature p { margin: 0; font-size: .88rem; color: var(--muted); }
+
+  /* Install */
+  .install {
+    padding: 22px 24px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    backdrop-filter: blur(8px);
+  }
+  .install h2 { margin: 0 0 12px; font-size: 1.05rem; }
   ol { margin: 0; padding-left: 1.4em; }
-  li { margin-bottom: 8px; }
+  li { margin-bottom: 8px; font-size: .95rem; }
+  li::marker { color: var(--accent); font-weight: 700; }
   code {
-    background: var(--border);
+    background: rgba(255, 255, 255, .12);
     border-radius: 4px;
     padding: 1px 6px;
     font-size: .9em;
   }
-  footer { text-align: center; font-size: .85rem; opacity: .7; margin-top: 40px; }
-  footer a { color: var(--fg); }
+  .install a { color: var(--accent); }
+
+  footer { text-align: center; color: var(--muted); font-size: .83rem; margin-top: 40px; }
+  footer a { color: var(--muted); text-decoration: underline; text-underline-offset: 3px; }
+
+  /* Entrance */
+  .reveal { animation: rise .7s ease both; }
+  .reveal:nth-child(2) { animation-delay: .08s; }
+  .reveal:nth-child(3) { animation-delay: .16s; }
+  @keyframes rise {
+    from { opacity: 0; transform: translateY(14px); }
+    to   { opacity: 1; transform: none; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    * { animation: none !important; transition: none !important; }
+  }
 </style>
 </head>
 <body>
 <main>
-  <header>
+  <header class="hero reveal">
+    <div class="logo" aria-hidden="true">
+      <svg viewBox="0 0 24 24"><path d="M15.5 1h-8A2.5 2.5 0 0 0 5 3.5v17A2.5 2.5 0 0 0 7.5 23h8a2.5 2.5 0 0 0 2.5-2.5v-17A2.5 2.5 0 0 0 15.5 1zm-4 21c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm4.5-4H7V4h9v14z"/></svg>
+    </div>
+    <span class="badge">ANDROID アプリ</span>
     <h1>LinkBridge</h1>
-    <p>ストックダイヤラーからの発信を楽天リンクに転送する</p>
-    <p>個人用 Android アプリ</p>
+    <p>ストックダイヤラーからの発信を <strong>楽天リンク</strong> に転送する</p>
+    <p>個人用アプリ</p>
   </header>
 
-  <a class="download-btn" href="https://github.com/hidenobunagai/linkbridge/releases/latest/download/app-release.apk">
+  <a class="download-btn reveal" href="https://github.com/hidenobunagai/linkbridge/releases/latest/download/app-release.apk">
+    <svg viewBox="0 0 24 24"><path d="M5 20h14v-2H5v2zM19 9h-4V3H9v6H5l7 7 7-7z"/></svg>
     最新版をダウンロード
   </a>
-  <p class="meta">バージョン 1.1-shizuku（APK / 約 11MB）</p>
+  <p class="meta reveal">バージョン <code>1.1-shizuku</code> ・ APK（約 11MB）</p>
 
-  <section>
-    <h2>できること</h2>
-    <p>「デフォルト通話転送アプリ」に設定すると、ダイヤラーからの発信を楽天リンクのダイヤラーへ引き継ぎます。緊急通報やショートコード等の特別な番号は通常発信のまま通し、実際に発信された通話だけを通話履歴に残します。</p>
-  </section>
+  <div class="feature-grid reveal">
+    <section class="feature">
+      <svg viewBox="0 0 24 24"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg>
+      <h2>ワンタップ転送</h2>
+      <p>ダイヤラーからの発信を、そのまま楽天リンクのダイヤラーへ引き継ぎます。</p>
+    </section>
+    <section class="feature">
+      <svg viewBox="0 0 24 24"><path d="M12 2 4 5v6c0 5.55 3.84 10.74 8 12 4.16-1.26 8-6.45 8-12V5l-8-3zm-2 15-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z"/></svg>
+      <h2>賢い番号判定</h2>
+      <p>ショートコードや緊急通報など特別な番号だけを通常発信のまま通します。</p>
+    </section>
+    <section class="feature">
+      <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+      <h2>履歴も自動補完</h2>
+      <p>実際に発信した通話だけを通話履歴に残します。発信していない誤検知なし。</p>
+    </section>
+  </div>
 
-  <section>
+  <section class="install reveal">
     <h2>インストール方法</h2>
     <ol>
       <li>上のボタンで APK をダウンロードし、通知またはファイルアプリから開く。初回は「提供元不明のアプリ」のインストール許可が必要です。</li>
       <li>アプリを開き「デフォルト通話転送アプリに設定」から LinkBridge を選択。</li>
-      <li>次を許可します: 通話履歴への書き込み（<code>WRITE_CALL_LOG</code>）、画面の上に表示（<code>SYSTEM_ALERT_WINDOW</code>）、通知へのアクセス。一部の権限は設定で付与できない場合があり、その場合は <code>adb</code> から付与してください。</li>
+      <li>通話履歴の書き込み・画面の上に表示・通知アクセスの権限を許可します。一部の端末では設定画面で付与できない場合があるため、その際は <code>adb</code> から付与してください。</li>
     </ol>
-    <p>詳しい手順は <a href="https://github.com/hidenobunagai/linkbridge/blob/main/README.md" style="color:var(--accent)">README</a> を参照してください。</p>
+    <p style="font-size:.9rem;color:var(--muted);margin:12px 0 0;">詳しい手順は <a href="https://github.com/hidenobunagai/linkbridge/blob/main/README.md">README</a> を参照してください。</p>
   </section>
 
   <footer>

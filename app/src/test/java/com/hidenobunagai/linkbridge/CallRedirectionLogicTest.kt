@@ -51,6 +51,15 @@ class CallRedirectionLogicTest {
     fun `ナビダイヤルは転送せず通常発信のまま通す`() {
         assertNull(phoneNumberForRedirect("tel", "0570123456"))
         assertNull(phoneNumberForRedirect("tel", "+81570123456"))
+        assertNull(phoneNumberForRedirect("tel", "0570-123-456"))
+        assertNull(phoneNumberForRedirect("tel", "+81-570-123-456"))
+    }
+
+    @Test
+    fun `ハイフンや空白を含む番号も正規化して転送対象として返す`() {
+        assertEquals("09012345678", phoneNumberForRedirect("tel", "090-1234-5678"))
+        assertEquals("+819012345678", phoneNumberForRedirect("tel", "+81 90 1234 5678"))
+        assertEquals("0312345678", phoneNumberForRedirect("tel", "(03) 1234-5678"))
     }
 
     @Test
@@ -63,12 +72,26 @@ class CallRedirectionLogicTest {
     fun `E164の国内番号は0から始まる形式に変換する`() {
         assertEquals("08068811852", toDialableNumber("+818068811852"))
         assertEquals("0312345678", toDialableNumber("+81312345678"))
+        // 01x / 02x などの市外局番 (札幌 011, 仙台 022 など)
+        assertEquals("0112223333", toDialableNumber("+81112223333"))
+        assertEquals("0221234567", toDialableNumber("+81221234567"))
+        assertEquals("0612345678", toDialableNumber("+81612345678"))
+        assertEquals("0921234567", toDialableNumber("+81921234567"))
+    }
+
+    @Test
+    fun `ハイフンや空白を含む番号も正規化して変換する`() {
+        assertEquals("08012345678", toDialableNumber("+81-80-1234-5678"))
+        assertEquals("0112223333", toDialableNumber("+81 11-222-3333"))
+        assertEquals("0312345678", toDialableNumber("(03) 1234-5678"))
+        assertEquals("01014155550100", toDialableNumber("+1 (415) 555-0100"))
     }
 
     @Test
     fun `プラス記号なしの81形式でも変換する`() {
         assertEquals("08068811852", toDialableNumber("818068811852"))
         assertEquals("0312345678", toDialableNumber("81312345678"))
+        assertEquals("0112223333", toDialableNumber("81112223333"))
     }
 
     @Test

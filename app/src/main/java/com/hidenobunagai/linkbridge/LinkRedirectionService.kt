@@ -113,6 +113,12 @@ class LinkRedirectionService : CallRedirectionService() {
         }
     }
 
+    override fun onDestroy() {
+        pendingChoice = null
+        ChooseCallAppOverlay.dismiss()
+        super.onDestroy()
+    }
+
     companion object {
         private const val TAG = "LinkBridge"
 

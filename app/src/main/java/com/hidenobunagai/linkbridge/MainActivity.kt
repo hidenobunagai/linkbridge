@@ -149,6 +149,19 @@ class MainActivity : ComponentActivity() {
         switchConfirm.isChecked = LinkRedirectionService.isConfirmEachCallEnabled(this)
         switchConfirm.setOnCheckedChangeListener { _, checked ->
             LinkRedirectionService.setConfirmEachCallEnabled(this, checked)
+            if (checked && !Settings.canDrawOverlays(this)) {
+                Toast.makeText(
+                    this,
+                    "選択ダイアログの表示には「画面の上に表示」の権限が必要です",
+                    Toast.LENGTH_LONG
+                ).show()
+                overlayLauncher.launch(
+                    Intent(
+                        Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                        Uri.parse("package:$packageName")
+                    )
+                )
+            }
         }
 
         try {

@@ -177,6 +177,7 @@ class MainActivity : ComponentActivity() {
     }
 
     override fun onDestroy() {
+        tempAllowRunnable?.let { Handler(Looper.getMainLooper()).removeCallbacks(it) }
         try {
             Shizuku.removeRequestPermissionResultListener(shizukuPermListener)
             Shizuku.removeBinderReceivedListener(shizukuBinderReceivedListener)
@@ -222,15 +223,17 @@ class MainActivity : ComponentActivity() {
         val permGranted = ShizukuBlocker.isPermissionGranted()
         val blockEnabled = ShizukuBlocker.isBlockEnabled(this)
         val isSuspended = try { ShizukuBlocker.isAnySuspended(this) } catch (_: Exception) { false }
+        val rationale = ShizukuBlocker.shouldShowRationale()
+        val binderAlive = try { Shizuku.pingBinder() } catch (_: Exception) { false }
 
-        // ボタン初期非表示
         btnShizukuPerm.visibility = View.GONE
         btnShizukuToggle.visibility = View.GONE
         btnShizukuTemp.visibility = View.GONE
         btnShizukuOpen.visibility = View.GONE
 
-        when {
-            !available -> {
+        val state = ShizukuCardState.resolve(available, permGranted, blockEnabled, isSuspended, rationale, binderAlive)
+        when (state) {
+            ShizukuCardState.NotInstalled -> {
                 chipShizuku.text = getString(R.string.status_no_shizuku)
                 chipShizuku.setTextColor(getColor(R.color.status_ng_fg))
                 chipShizuku.backgroundTintList = ColorStateList.valueOf(getColor(R.color.status_ng_bg))
@@ -238,22 +241,20 @@ class MainActivity : ComponentActivity() {
                 hintShizuku.text = getString(R.string.hint_shizuku_no)
                 btnShizukuOpen.visibility = View.VISIBLE
             }
-            !permGranted -> {
-                val rationale = ShizukuBlocker.shouldShowRationale()
+            is ShizukuCardState.NeedPermission -> {
                 chipShizuku.text = getString(R.string.status_need_perm)
                 chipShizuku.setTextColor(getColor(R.color.status_ng_fg))
                 chipShizuku.backgroundTintList = ColorStateList.valueOf(getColor(R.color.status_ng_bg))
                 setChipIcon(chipShizuku, R.drawable.ic_cancel, R.color.status_ng_fg)
-                hintShizuku.text = if (rationale) getString(R.string.hint_shizuku_rationale) else getString(R.string.hint_shizuku_perm)
-                // テスト用: インストール済みだが binder dead の場合は hint を dead に上書き
-                if (!Shizuku.pingBinder()) {
+                hintShizuku.text = if (state.rationale) getString(R.string.hint_shizuku_rationale) else getString(R.string.hint_shizuku_perm)
+                if (!state.binderAlive) {
                     hintShizuku.text = getString(R.string.hint_shizuku_dead)
                     btnShizukuOpen.visibility = View.VISIBLE
                 } else {
                     btnShizukuPerm.visibility = View.VISIBLE
                 }
             }
-            blockEnabled && isSuspended -> {
+            ShizukuCardState.Blocked -> {
                 chipShizuku.text = getString(R.string.status_blocked)
                 chipShizuku.setTextColor(getColor(R.color.status_ok_fg))
                 chipShizuku.backgroundTintList = ColorStateList.valueOf(getColor(R.color.status_ok_bg))
@@ -263,8 +264,7 @@ class MainActivity : ComponentActivity() {
                 btnShizukuToggle.visibility = View.VISIBLE
                 btnShizukuTemp.visibility = View.VISIBLE
             }
-            blockEnabled && !isSuspended -> {
-                // 有効だが何らかの理由で suspend されていない (再起動直後など)
+            ShizukuCardState.EnabledButNotSuspended -> {
                 chipShizuku.text = getString(R.string.status_ready)
                 chipShizuku.setTextColor(getColor(R.color.status_ok_fg))
                 chipShizuku.backgroundTintList = ColorStateList.valueOf(getColor(R.color.status_ok_bg))
@@ -272,10 +272,9 @@ class MainActivity : ComponentActivity() {
                 hintShizuku.text = getString(R.string.hint_shizuku_ready) + "\n(現在は停止されていません — 再適用します)"
                 btnShizukuToggle.text = getString(R.string.btn_shizuku_disable)
                 btnShizukuToggle.visibility = View.VISIBLE
-                // 自動で再 suspend を試みる
                 ShizukuBlocker.suspendAllAsync(this) { updateStatusOnUi() }
             }
-            else -> {
+            ShizukuCardState.Ready -> {
                 chipShizuku.text = getString(R.string.status_ready)
                 chipShizuku.setTextColor(getColor(R.color.status_ok_fg))
                 chipShizuku.backgroundTintList = ColorStateList.valueOf(getColor(R.color.status_ok_bg))
@@ -309,40 +308,53 @@ class MainActivity : ComponentActivity() {
     private fun toggleShizukuBlock() {
         val enabled = ShizukuBlocker.isBlockEnabled(this)
         if (!enabled) {
-            // 有効化: suspend 実行
             if (!ShizukuBlocker.isShizukuAvailable() || !ShizukuBlocker.isPermissionGranted()) {
-                Toast.makeText(this, "Shizukuの準備ができていません", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, getString(R.string.toast_shizuku_not_ready), Toast.LENGTH_SHORT).show()
                 return
             }
             ShizukuBlocker.setBlockEnabled(this, true)
-            Toast.makeText(this, "遮断を有効化中…", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, getString(R.string.toast_block_enabling), Toast.LENGTH_SHORT).show()
             ShizukuBlocker.suspendAllAsync(this) { ok ->
-                Toast.makeText(this, if (ok) "楽天リンクを停止しました" else "停止に失敗しました", Toast.LENGTH_SHORT).show()
+                Toast.makeText(
+                    this,
+                    getString(if (ok) R.string.toast_block_enabled else R.string.toast_block_enable_failed),
+                    Toast.LENGTH_SHORT
+                ).show()
                 updateStatus()
             }
         } else {
-            // 無効化: unsuspend 実行
             ShizukuBlocker.setBlockEnabled(this, false)
-            Toast.makeText(this, "遮断を解除中…", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, getString(R.string.toast_block_disabling), Toast.LENGTH_SHORT).show()
             ShizukuBlocker.unsuspendAllAsync(this) { ok ->
-                Toast.makeText(this, if (ok) "楽天リンクを再開しました" else "再開に失敗しました", Toast.LENGTH_SHORT).show()
+                Toast.makeText(
+                    this,
+                    getString(if (ok) R.string.toast_block_disabled else R.string.toast_block_disable_failed),
+                    Toast.LENGTH_SHORT
+                ).show()
                 updateStatus()
             }
         }
         updateStatus()
     }
 
+    private var tempAllowRunnable: Runnable? = null
+
     private fun tempAllowShizuku() {
         if (!ShizukuBlocker.isShizukuAvailable() || !ShizukuBlocker.isPermissionGranted()) return
-        Toast.makeText(this, "10分間 一時的に許可します", Toast.LENGTH_SHORT).show()
+        Toast.makeText(this, getString(R.string.toast_temp_allow_start), Toast.LENGTH_SHORT).show()
         ShizukuBlocker.unsuspendAllAsync(this) { ok ->
             if (ok) {
-                Toast.makeText(this, "楽天リンクを再開しました。10分後に再停止します", Toast.LENGTH_LONG).show()
-                Handler(Looper.getMainLooper()).postDelayed({
-                    if (ShizukuBlocker.isBlockEnabled(this)) {
-                        ShizukuBlocker.suspendAllAsync(this) { updateStatusOnUi() }
+                Toast.makeText(this, getString(R.string.toast_temp_allow_done), Toast.LENGTH_LONG).show()
+                val handler = Handler(Looper.getMainLooper())
+                tempAllowRunnable?.let { handler.removeCallbacks(it) }
+                val appCtx = applicationContext
+                val r = Runnable {
+                    if (ShizukuBlocker.isBlockEnabled(appCtx)) {
+                        ShizukuBlocker.suspendAllAsync(appCtx) { updateStatusOnUi() }
                     }
-                }, 10 * 60 * 1000L)
+                }
+                tempAllowRunnable = r
+                handler.postDelayed(r, 10 * 60 * 1000L)
             }
             updateStatus()
         }

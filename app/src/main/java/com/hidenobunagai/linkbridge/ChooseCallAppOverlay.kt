@@ -52,7 +52,7 @@ class ChooseCallAppOverlay private constructor(
 
             windowManager.addView(view, params)
             this.view = view
-            Log.i(TAG, "overlay added: $dialNumber")
+            Log.i(TAG, "overlay added: ${maskDial(dialNumber)}")
             // システムの応答期限 (約10秒) より前に必ず応答する
             // (タイムアウト後の応答は無視され、Samsung ではエラーダイアログが出る)
             handler.postDelayed({ respond(false) }, AUTO_CLOSE_MS)
@@ -90,9 +90,12 @@ class ChooseCallAppOverlay private constructor(
         fun show(context: Context, dialNumber: String, onChoose: (Boolean) -> Unit) {
             dismiss()
             active = ChooseCallAppOverlay(context, dialNumber, onChoose)
-            Log.i(TAG, "overlay show requested: $dialNumber (thread=${Thread.currentThread().name})")
+            Log.i(TAG, "overlay show requested: ${maskDial(dialNumber)} (thread=${Thread.currentThread().name})")
             Handler(Looper.getMainLooper()).post { active?.showInternal() }
         }
+
+        private fun maskDial(dial: String): String =
+            if (dial.length <= 4) "****" else dial.take(3) + "*".repeat(dial.length - 3)
 
         /** 表示中のオーバーレイを閉じる (応答は呼ばない) */
         fun dismiss() {

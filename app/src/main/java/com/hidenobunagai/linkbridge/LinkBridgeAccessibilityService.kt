@@ -80,10 +80,8 @@ class LinkBridgeAccessibilityService : AccessibilityService() {
         handler.postDelayed(r, DEBOUNCE_MS)
     }
 
-    private fun isCallOngoing(): Boolean {
-        // CallNotificationListener が通知 posted 時に保存する call_start_ms が存在すれば通話中
-        return getSharedPreferences("linkbridge", MODE_PRIVATE).contains("call_start_ms")
-    }
+    private fun isCallOngoing(): Boolean =
+        PendingRedirectStore.hasCallStartMs(this)
 
     override fun onInterrupt() {}
 

@@ -20,19 +20,15 @@ import kotlin.concurrent.thread
  */
 object ShizukuBlocker {
     private const val TAG = "LinkBridge-Shizuku"
-    private const val PREFS_NAME = "linkbridge"
-    private const val KEY_BLOCK_ENABLED = "shizuku_block_enabled"
     const val SHIZUKU_PERMISSION_CODE = 1001
 
     val TARGET_PACKAGES = LinkRedirectionService.RAKUTEN_LINK_PACKAGES
 
     fun isBlockEnabled(context: Context): Boolean =
-        context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-            .getBoolean(KEY_BLOCK_ENABLED, false)
+        Prefs.prefs(context).getBoolean(Prefs.KEY_BLOCK_ENABLED, false)
 
     fun setBlockEnabled(context: Context, enabled: Boolean) {
-        context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE).edit()
-            .putBoolean(KEY_BLOCK_ENABLED, enabled).apply()
+        Prefs.prefs(context).edit().putBoolean(Prefs.KEY_BLOCK_ENABLED, enabled).apply()
     }
 
     fun isShizukuAvailable(): Boolean = try {
@@ -143,19 +139,6 @@ object ShizukuBlocker {
         } catch (e: Exception) {
             Log.e(TAG, "shell $action failed for $pkg", e)
             false
-        }
-    }
-
-    /** 発信時の典型フロー: ブロック有効なら unsuspend して 300ms 待つ (PackageManager反映待ち) */
-    fun unsuspendForOutgoingBlocking(context: Context) {
-        if (!isBlockEnabled(context)) return
-        if (!isShizukuAvailable() || !isPermissionGranted()) return
-        try {
-            unsuspendAllSync(context)
-            // suspend フラグの反映にわずかにラグがあるため短時間待機
-            Thread.sleep(400)
-        } catch (e: Exception) {
-            Log.w(TAG, "unsuspendForOutgoing failed", e)
         }
     }
 

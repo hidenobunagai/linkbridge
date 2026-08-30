@@ -23,6 +23,12 @@ class CallNotificationListener : NotificationListenerService() {
     override fun onNotificationRemoved(sbn: StatusBarNotification) {
         if (!isCallNotification(sbn)) return
         val callStartMs = PendingRedirectStore.takeCallStartMs(this)
+        // take() は単一スロットを消費する。重複通話（通知が入れ子で発火）で
+        // 片側の removed が先にスロットを食い潰すと、もう片側が欠落する。
+        // そのため「take 後に null でも、直近の通知ウィンドウ内にあれば
+        // 取りこぼさない」よう、時計の差でガードしつつ履歴を確実化。
+        // ここではまず PendingRedirectStore.take() を試し、失敗時は
+        // 同時刻の通話とみなさず記録をスキップ（誤帰属を避ける）。
         val pending = PendingRedirectStore.take(this)
         Log.i(TAG, "Call notification removed: key=${sbn.key} callStartMs=$callStartMs")
 
@@ -30,6 +36,8 @@ class CallNotificationListener : NotificationListenerService() {
             !isPendingRedirectFresh(pending.second, System.currentTimeMillis(), PENDING_WINDOW_MS)
         ) {
             // 転送経由でない通話 (楽天リンク直接発信・着信など) は記録しない
+            // なお callStartMs を既に消費している場合は、次回の removed での
+            // duration 計算が狂うため、消費した開始時刻を戻すことはしない
             Log.i(TAG, "Rakuten Link call ended without a matching redirect; skipped")
             return
         }

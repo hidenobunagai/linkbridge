@@ -10,25 +10,20 @@ import android.util.Log
  * プロセスが終了してもよいよう SharedPreferences に保存する。
  */
 internal object PendingRedirectStore {
-    private const val PREFS_NAME = "linkbridge"
-    private const val KEY_NUMBER = "pending_number"
-    private const val KEY_TIME_MS = "pending_time_ms"
-    private const val KEY_CALL_START_MS = "call_start_ms"
-
     /** 転送発生時に、引き継いだ番号と時刻を保存する */
     fun save(context: Context, number: String) {
-        context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE).edit()
-            .putString(KEY_NUMBER, number)
-            .putLong(KEY_TIME_MS, System.currentTimeMillis())
+        Prefs.prefs(context).edit()
+            .putString(Prefs.KEY_PENDING_NUMBER, number)
+            .putLong(Prefs.KEY_PENDING_TIME_MS, System.currentTimeMillis())
             .apply()
     }
 
     /** 保留中の転送情報を読み出し、消去する */
     fun take(context: Context): Pair<String, Long>? {
-        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-        val number = prefs.getString(KEY_NUMBER, null)
-        val timeMs = prefs.getLong(KEY_TIME_MS, 0L)
-        prefs.edit().remove(KEY_NUMBER).remove(KEY_TIME_MS).apply()
+        val prefs = Prefs.prefs(context)
+        val number = prefs.getString(Prefs.KEY_PENDING_NUMBER, null)
+        val timeMs = prefs.getLong(Prefs.KEY_PENDING_TIME_MS, 0L)
+        prefs.edit().remove(Prefs.KEY_PENDING_NUMBER).remove(Prefs.KEY_PENDING_TIME_MS).apply()
         return if (number.isNullOrBlank()) null else number to timeMs
     }
 
@@ -38,19 +33,26 @@ internal object PendingRedirectStore {
      * (後から上書きすると、切る直前に更新が来た場合に通話時間が 0 秒になる)。
      */
     fun setCallStartMsIfAbsent(context: Context, timeMs: Long) {
-        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-        if (!prefs.contains(KEY_CALL_START_MS)) {
-            prefs.edit().putLong(KEY_CALL_START_MS, timeMs).apply()
+        val prefs = Prefs.prefs(context)
+        if (!prefs.contains(Prefs.KEY_CALL_START_MS)) {
+            prefs.edit().putLong(Prefs.KEY_CALL_START_MS, timeMs).apply()
         }
     }
 
+    fun hasCallStartMs(context: Context): Boolean =
+        Prefs.prefs(context).contains(Prefs.KEY_CALL_START_MS)
+
     /** 通話開始時刻を読み出し、消去する */
     fun takeCallStartMs(context: Context): Long {
-        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-        val timeMs = prefs.getLong(KEY_CALL_START_MS, 0L)
-        prefs.edit().remove(KEY_CALL_START_MS).apply()
+        val prefs = Prefs.prefs(context)
+        val timeMs = prefs.getLong(Prefs.KEY_CALL_START_MS, 0L)
+        prefs.edit().remove(Prefs.KEY_CALL_START_MS).apply()
         return timeMs
     }
+
+    /** 通話履歴に書き込む前の「同時に複数通話」の取りこぼしを避けるため、番号側も重ねて保持する二重化 */
+    fun peekPendingNumber(context: Context): String? =
+        Prefs.prefs(context).getString(Prefs.KEY_PENDING_NUMBER, null)
 }
 
 /**

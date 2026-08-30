@@ -24,7 +24,7 @@ class LinkRedirectionService : CallRedirectionService() {
 
         Log.i(
             TAG,
-            "onPlaceCall: number=$number thread=${Thread.currentThread().name} " +
+            "onPlaceCall: number=${maskNumber(number)} thread=${Thread.currentThread().name} " +
                 "interactive=$allowInteractiveResponse confirm=${isConfirmEachCallEnabled(this)}"
         )
 
@@ -54,37 +54,45 @@ class LinkRedirectionService : CallRedirectionService() {
 
     /** 楽天リンクへ転送する (Shizuku 遮断の解除 → 履歴補完の保留保存 → 通話キャンセル → 楽天リンク起動) */
     private fun redirectToRakuten(dialNumber: String, intent: Intent) {
-        // Shizuku 遮断が有効な場合: 発信直前に unsuspend を試みる。
-        // Shizuku 未起動/権限なし/unsuspend 失敗時は通常発信へフォールバック (課金は発生するが通話自体は失敗させない)
         val blockEnabled = ShizukuBlocker.isBlockEnabled(this)
         if (blockEnabled) {
             val shizukuReady = ShizukuBlocker.isShizukuAvailable() && ShizukuBlocker.isPermissionGranted()
             if (!shizukuReady) {
-                Log.w(TAG, "Shizuku not ready (binder dead or no perm): fallback to normal call for $dialNumber")
+                Log.w(TAG, "Shizuku not ready (binder dead or no perm): fallback to normal call for ${maskNumber(dialNumber)}")
                 placeCallUnmodified()
                 return
             }
+            // 1) まず Dialer の通話試行をキャンセルして応答期限のカウントダウンを止める
+            // 2) バックグラウンドで unsuspend → 軽量ポーリングで反映を待つ（最大 ~400ms）
+            // 失敗時はフォールバック（mask 済みのログで PII 流出を避ける）
+            cancelCall()
             try {
                 Log.i(TAG, "Shizuku block is enabled: unsuspending Rakuten Link for outgoing call")
                 ShizukuBlocker.unsuspendAllSync(this)
-                Thread.sleep(350)
+                val deadline = System.currentTimeMillis() + 400
+                while (System.currentTimeMillis() < deadline) {
+                    if (!ShizukuBlocker.isAnySuspended(this)) break
+                    Thread.sleep(50)
+                }
                 if (ShizukuBlocker.isAnySuspended(this)) {
-                    Log.w(TAG, "Still suspended after unsuspend: fallback to normal call")
-                    placeCallUnmodified()
+                    Log.w(TAG, "Still suspended after unsuspend: abort launch, already cancelled")
                     return
                 }
             } catch (e: Exception) {
-                Log.w(TAG, "Shizuku unsuspend failed: fallback to normal call", e)
-                placeCallUnmodified()
+                Log.w(TAG, "Shizuku unsuspend failed: abort launch, already cancelled", e)
                 return
             }
+
+            PendingRedirectStore.save(this, dialNumber)
+            try {
+                startActivity(intent)
+            } catch (e: Exception) {
+                Log.e(TAG, "Failed to launch Rakuten Link", e)
+            }
+            return
         }
 
-        // 履歴補完は実際に発信されたかを通知監視 (CallNotificationListener) で検知してから
-        // 行うため、ここでは引き継いだ番号を保存するだけ
         PendingRedirectStore.save(this, dialNumber)
-
-        // まず通常通話をキャンセルしてから楽天リンクへ引き継ぐ (発信画面が残る時間を最小化)
         cancelCall()
         try {
             startActivity(intent)
@@ -101,15 +109,25 @@ class LinkRedirectionService : CallRedirectionService() {
             redirectToRakuten(dialNumber, intent)
             return
         }
-        Log.i(TAG, "showChooseDialog: showing overlay for $dialNumber")
+        val myGen = ++pendingChoiceGen
+        Log.i(TAG, "showChooseDialog: showing overlay for ${maskNumber(dialNumber)} gen=$myGen")
         pendingChoice = { toRakuten ->
+            // 古い世代のコールバックは無視（プロセス内で上書きされた場合の保護）
+            if (myGen != pendingChoiceGen) {
+                Log.w(TAG, "stale pendingChoice gen=$myGen current=${pendingChoiceGen}: ignored")
+                return@let
+            }
             pendingChoice = null
-            Log.i(TAG, "choose result: toRakuten=$toRakuten")
+            Log.i(TAG, "choose result: toRakuten=$toRakuten gen=$myGen")
             if (toRakuten) redirectToRakuten(dialNumber, intent) else placeCallUnmodified()
         }
         ChooseCallAppOverlay.show(this, dialNumber) { toRakuten ->
-            // タイムアウト等で選択待ちが解除されていなければ選択を実行する
-            pendingChoice?.invoke(toRakuten)
+            // 世代が一致する場合のみ選択を実行（古いオーバーレイのコールバックを抑止）
+            if (myGen == pendingChoiceGen) {
+                pendingChoice?.invoke(toRakuten)
+            } else {
+                Log.w(TAG, "overlay stale gen=$myGen current=${pendingChoiceGen}: ignored")
+            }
         }
     }
 
@@ -122,12 +140,11 @@ class LinkRedirectionService : CallRedirectionService() {
     companion object {
         private const val TAG = "LinkBridge"
 
-        private const val PREFS_NAME = "linkbridge"
-        private const val KEY_CONFIRM_EACH_CALL = "confirm_each_call"
-
         /** 選択ダイアログの待機中コールバック (ChooseCallAppActivity → 応答時に invoke)。null なら待機なし */
         @Volatile
         var pendingChoice: ((Boolean) -> Unit)? = null
+        @Volatile
+        var pendingChoiceGen: Long = 0L
 
         /** 対応アプリ: 通常の楽天リンクと法人向け Rakuten Link Office (先に見つかった方を優先) */
         val RAKUTEN_LINK_PACKAGES = listOf(
@@ -137,12 +154,14 @@ class LinkRedirectionService : CallRedirectionService() {
 
         /** 発信時に毎回確認する設定 (デフォルト OFF = 常に楽天リンクへ転送) */
         fun isConfirmEachCallEnabled(context: Context): Boolean =
-            context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-                .getBoolean(KEY_CONFIRM_EACH_CALL, false)
+            Prefs.prefs(context).getBoolean(Prefs.KEY_CONFIRM_EACH_CALL, false)
 
         fun setConfirmEachCallEnabled(context: Context, enabled: Boolean) {
-            context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE).edit()
-                .putBoolean(KEY_CONFIRM_EACH_CALL, enabled).apply()
+            Prefs.prefs(context).edit().putBoolean(Prefs.KEY_CONFIRM_EACH_CALL, enabled).apply()
         }
     }
 }
+
+private fun maskNumber(number: String): String =
+    if (number.length <= 4) "****"
+    else number.take(3) + "*".repeat(number.length - 3)

@@ -112,14 +112,13 @@ class LinkRedirectionService : CallRedirectionService() {
         val myGen = ++pendingChoiceGen
         Log.i(TAG, "showChooseDialog: showing overlay for ${maskNumber(dialNumber)} gen=$myGen")
         pendingChoice = { toRakuten ->
-            // 古い世代のコールバックは無視（プロセス内で上書きされた場合の保護）
             if (myGen != pendingChoiceGen) {
                 Log.w(TAG, "stale pendingChoice gen=$myGen current=${pendingChoiceGen}: ignored")
-                return@let
+            } else {
+                pendingChoice = null
+                Log.i(TAG, "choose result: toRakuten=$toRakuten gen=$myGen")
+                if (toRakuten) redirectToRakuten(dialNumber, intent) else placeCallUnmodified()
             }
-            pendingChoice = null
-            Log.i(TAG, "choose result: toRakuten=$toRakuten gen=$myGen")
-            if (toRakuten) redirectToRakuten(dialNumber, intent) else placeCallUnmodified()
         }
         ChooseCallAppOverlay.show(this, dialNumber) { toRakuten ->
             // 世代が一致する場合のみ選択を実行（古いオーバーレイのコールバックを抑止）

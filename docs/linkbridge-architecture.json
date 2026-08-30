@@ -1,0 +1,98 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "LinkBridge System Architecture",
+    "output": "docs/architecture.html",
+    "quality_profile": "showcase",
+    "views": [
+      {
+        "id": "outgoing-redirect",
+        "label": "Call Redirection Flow",
+        "focus": ["dialer", "telecom", "redirection", "overlay", "rakuten_link"],
+        "note": "標準ダイヤラーの発信を傍受し、番号変換・選択確認を経て楽天リンクを起動する主経路"
+      },
+      {
+        "id": "shizuku-suspension",
+        "label": "Shizuku Suspend / Unsuspend",
+        "focus": ["shizuku_daemon", "shizuku_blocker", "redirection", "rakuten_link", "cellular"],
+        "note": "待機中は楽天リンクをsuspendしてVoLTE着信を保護し、発信時に自動unsuspendする経路"
+      },
+      {
+        "id": "lifecycle-logging",
+        "label": "Notification & Call Log",
+        "focus": ["rakuten_link", "notif_listener", "a11y_service", "call_log_writer", "android_call_log"],
+        "note": "通話中通知による正確な通話時間の記録、終話後/未発信終了時の自動再suspend制御"
+      }
+    ]
+  },
+  "components": [
+    { "id": "dialer", "type": "frontend", "label": "Stock Dialer", "sublabel": "標準電話アプリ", "tag": "Intent tel:", "pos": [40, 240], "size": [130, 60] },
+    { "id": "cellular", "type": "external", "label": "Carrier Network", "sublabel": "VoLTE / 通常発着信", "tag": "Cellular Telephony", "pos": [40, 430], "size": [130, 60] },
+    { "id": "telecom", "type": "cloud", "label": "Android Telecom", "sublabel": "CallRedirection API", "tag": "System Framework", "pos": [250, 240], "size": [140, 60] },
+    { "id": "overlay", "type": "frontend", "label": "ChooseCallAppOverlay", "sublabel": "発信時選択ダイアログ", "tag": "SYSTEM_ALERT_WINDOW", "pos": [470, 70], "size": [160, 60] },
+    { "id": "redirection", "type": "backend", "label": "LinkRedirectionService", "sublabel": "転送判定・番号整形・起動", "tag": "Core Router", "pos": [470, 240], "size": [160, 60] },
+    { "id": "shizuku_blocker", "type": "security", "label": "ShizukuBlocker", "sublabel": "suspend / unsuspend 制御", "tag": "IPC Controller", "pos": [470, 430], "size": [160, 60] },
+    { "id": "a11y_service", "type": "backend", "label": "AccessibilityService", "sublabel": "未発信クローズ検知", "tag": "Window State Monitor", "pos": [710, 70], "size": [160, 60] },
+    { "id": "rakuten_link", "type": "external", "label": "Rakuten Link", "sublabel": "個人版 / Link Office", "tag": "RCS / VoIP 通話", "pos": [710, 240], "size": [160, 60] },
+    { "id": "shizuku_daemon", "type": "security", "label": "Shizuku Daemon", "sublabel": "adb / ワイヤレスデバッグ", "tag": "Privileged Binder", "pos": [710, 430], "size": [160, 60] },
+    { "id": "notif_listener", "type": "backend", "label": "CallNotificationListener", "sublabel": "通話中通知監視・終話検知", "tag": "NotificationListener", "pos": [950, 70], "size": [160, 60] },
+    { "id": "call_log_writer", "type": "database", "label": "CallLogWriter", "sublabel": "通話時間算出・書き込み", "tag": "WRITE_CALL_LOG", "pos": [950, 240], "size": [160, 60] },
+    { "id": "android_call_log", "type": "database", "label": "Android CallLog", "sublabel": "端末標準 通話履歴DB", "tag": "CallLog.Calls Provider", "pos": [950, 430], "size": [160, 60] }
+  ],
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "LinkBridge Application (Sandbox)",
+      "wraps": ["overlay", "redirection", "shizuku_blocker", "a11y_service", "notif_listener", "call_log_writer"]
+    },
+    {
+      "kind": "security-group",
+      "label": "Privileged Shizuku IPC",
+      "wraps": ["shizuku_blocker", "shizuku_daemon"]
+    }
+  ],
+  "connections": [
+    { "id": "dial-to-telecom", "from": "dialer", "to": "telecom", "label": "発信 (tel:)", "variant": "emphasis" },
+    { "id": "telecom-to-redir", "from": "telecom", "to": "redirection", "label": "onPlaceCall" },
+    { "id": "telecom-to-cell", "from": "telecom", "to": "cellular", "label": "通常発信", "variant": "dashed", "fromSide": "bottom", "toSide": "top", "labelDy": 50 },
+    { "id": "redir-to-overlay", "from": "redirection", "to": "overlay", "label": "確認 (任意)", "fromSide": "top", "toSide": "bottom", "labelDy": -50 },
+    { "id": "redir-to-blocker", "from": "redirection", "to": "shizuku_blocker", "label": "unsuspend", "fromSide": "bottom", "toSide": "top", "labelDy": 50 },
+    { "id": "redir-to-link", "from": "redirection", "to": "rakuten_link", "label": "転送 (010変換)", "variant": "emphasis" },
+    { "id": "blocker-to-daemon", "from": "shizuku_blocker", "to": "shizuku_daemon", "label": "Binder IPC", "variant": "security" },
+    { "id": "daemon-to-link", "from": "shizuku_daemon", "to": "rakuten_link", "label": "suspend制御", "fromSide": "top", "toSide": "bottom", "labelDy": -50 },
+    { "id": "link-to-a11y", "from": "rakuten_link", "to": "a11y_service", "label": "離脱検知", "fromSide": "top", "toSide": "bottom", "labelDy": -50 },
+    { "id": "link-to-notif", "from": "rakuten_link", "to": "notif_listener", "label": "通話中通知", "fromSide": "right", "toSide": "left" },
+    { "id": "notif-to-writer", "from": "notif_listener", "to": "call_log_writer", "label": "通話時間", "fromSide": "bottom", "toSide": "top", "labelDy": 50 },
+    { "id": "writer-to-calllog", "from": "call_log_writer", "to": "android_call_log", "label": "履歴Insert", "fromSide": "bottom", "toSide": "top", "labelDy": 50 }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "通話転送・番号整形 (Core Routing)",
+      "items": [
+        "標準ダイヤラーからの発信を CallRedirectionService で透過的に傍受",
+        "国内番号は 0 始まり、国際番号は 010 形式へ自動変換して楽天リンクへ渡す",
+        "緊急通報 (110/119) や USSD・特番・0570 は安全に通常発信へスルー"
+      ]
+    },
+    {
+      "dot": "violet",
+      "title": "Shizuku 着信完全遮断 (Rootless ADB)",
+      "items": [
+        "待機中は楽天リンクを suspend して VoLTE キャリア着信を標準電話で受信",
+        "発信時は 0.4s 内に自動 unsuspend してシームレスに楽天リンク通話を開始",
+        "終話後(3s)および未発信終了時(1.5s)に自動で安全に再 suspend"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "通話履歴補完 & UI 制御 (Lifecycle)",
+      "items": [
+        "通話中通知 (notification_call_ongoing) を監視し、実通話のみ正確に履歴記録",
+        "発信時に毎回確認オーバーレイ (4秒自動タイムアウト) による柔軟な発信選択",
+        "VPN 枠を消費しないため Tailscale やローカル DNS との完全共存を実現"
+      ]
+    }
+  ]
+}

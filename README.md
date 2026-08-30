@@ -2,7 +2,10 @@
 
 ストックダイヤラーからの発信を楽天リンク (`jp.co.rakuten.mobile.rcs` / 法人向け Rakuten Link Office `jp.co.rakuten.mobile.rcs.business`) に転送する個人用 Android アプリ。
 
-![LinkBridge 概要](linkbridge_summary.png)
+[![LinkBridge システムアーキテクチャ](architecture.png)](https://hidenobunagai.github.io/linkbridge/architecture.html)
+
+> 💡 **[インタラクティブな全体アーキテクチャ図を開く (Archify)](https://hidenobunagai.github.io/linkbridge/architecture.html)** — テーマ切替・コンポーネント詳細・関係性のトレース・フォーカス表示が可能です。
+
 
 ## 動作
 
@@ -70,9 +73,7 @@
 
 楽天リンクではなく**標準の電話アプリ**で着信を受け取りたい場合のオプションです。端末の省電力設定等で楽天リンクを止めようとしても FCM 高優先度のプッシュで起動してしまうため、Shizuku (adb / ワイヤレスデバッグ) で楽天リンクを `suspend` します。AdGuard 等の VPN ファイアウォールは Tailscale と VPN 枠が排他で共存できません。
 
-本アプリは **Shizuku (adb / ワイヤレスデバッグ) 経由で楽天リンクを `suspend` する方式**を追加しました。VPNを占有しないため Tailscale 使用中でも着信を標準電話アプリへ完全フォールバックできます。
-
-![着信の完全遮断 (Shizuku)](shizuku.png)
+本アプリは **Shizuku (adb / ワイヤレスデバッグ) 経由で楽天リンクを `suspend` する方式**を追加しました。VPNを占有しないため Tailscale 使用中でも着信を標準電話アプリへ完全フォールバックできます（全体の動作関係は上部のアーキテクチャ図を参照）。
 
 ### 仕組み
 

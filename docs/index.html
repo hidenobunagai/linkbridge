@@ -242,8 +242,10 @@
   <section class="section how reveal">
     <h2><span>しくみ</span> — どこを通るか</h2>
     <figure>
-      <img src="images/linkbridge_summary.png" alt="電話をかけると LinkBridge が楽天リンクへ引き継ぐ流れの図">
-      <figcaption>LinkBridge のしくみ（全体の流れ）</figcaption>
+      <a href="architecture.html" target="_blank" rel="noopener noreferrer">
+        <img src="images/architecture.png" alt="LinkBridge システムアーキテクチャ（全体の流れ）">
+      </a>
+      <figcaption>LinkBridge の全体アーキテクチャ（<a href="architecture.html" target="_blank" rel="noopener noreferrer" style="color:var(--accent);">インタラクティブ版を開く</a>）</figcaption>
     </figure>
     <ol>
       <li>電話をかけると「デフォルト通話転送アプリ」の LinkBridge が発信をうけとります</li>
@@ -283,14 +285,9 @@
     <div class="optional">
       <span class="badge" style="margin-bottom:10px;">上級者向け・任意</span>
       <h3>着信の完全遮断（Shizuku）</h3>
-      <div class="opt-grid">
-        <div>
-          <p>通常、着信は<b>楽天リンク</b>に届きます。このオプションを有効にすると楽天リンクを一時停止し、着信をキャリア網(VoLTE)から<b>標準の電話アプリ</b>で受け取れるようになります。</p>
-          <p>VPN を使わない方式のため、<b>Tailscale などの VPN と共存</b>できます。</p>
-          <p>設定は Shizuku の起動 → アプリ内の「着信の完全遮断 (Shizuku)」カードで有効化です。遮断中は楽天リンクを開けないため、メッセージ確認時は一時的に許可(10分)してください。詳細は <a href="https://github.com/hidenobunagai/linkbridge/blob/main/README.md">README</a> 参照。</p>
-        </div>
-        <img src="images/shizuku.png" alt="Shizuku による着信完全遮断の仕組みの図">
-      </div>
+      <p>通常、着信は<b>楽天リンク</b>に届きます。このオプションを有効にすると楽天リンクを一時停止し、着信をキャリア網(VoLTE)から<b>標準の電話アプリ</b>で受け取れるようになります。</p>
+      <p>VPN を使わない方式のため、<b>Tailscale などの VPN と共存</b>できます。</p>
+      <p>設定は Shizuku の起動 → アプリ内の「着信の完全遮断 (Shizuku)」カードで有効化です。遮断中は楽天リンクを開けないため、メッセージ確認時は一時的に許可(10分)してください。詳細は <a href="https://github.com/hidenobunagai/linkbridge/blob/main/README.md">README</a> 参照。</p>
     </div>
   </section>
 
